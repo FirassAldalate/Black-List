@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام البحث الذكي</title>
+    <title>نظام البحث الاحترافي</title>
     <style>
         :root {
             --primary: #007bff;
             --success: #28a745;
             --whatsapp: #25d366;
             --bg: #f8f9fa;
-            --text-main: #2d3436;
         }
 
         body {
@@ -31,96 +30,68 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
-        /* حالة الاتصال */
         #status {
             text-align: center;
-            font-size: 12px;
+            font-size: 13px;
             margin-bottom: 15px;
-            padding: 5px;
-            border-radius: 10px;
-            transition: 0.3s;
+            font-weight: bold;
         }
 
-        /* صندوق البحث */
-        .search-area {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        input {
+        .search-area input {
             width: 100%;
-            padding: 18px;
+            padding: 16px;
             border: 2px solid #eee;
-            border-radius: 18px;
+            border-radius: 15px;
             font-size: 16px;
             box-sizing: border-box;
             outline: none;
-            transition: 0.3s;
             text-align: center;
-            background: #fdfdfd;
         }
 
-        input:focus {
-            border-color: var(--primary);
-            background: #fff;
-            box-shadow: 0 5px 15px rgba(0,123,255,0.1);
-        }
-
-        button {
+        .search-area button {
             width: 100%;
             background: var(--primary);
             color: white;
             border: none;
             padding: 16px;
-            border-radius: 18px;
+            border-radius: 15px;
             font-size: 18px;
             font-weight: bold;
-            margin-top: 12px;
+            margin-top: 10px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
-            transition: 0.2s;
         }
 
-        button:active { transform: scale(0.97); }
-
-        /* كرت النتيجة */
         .result-card {
             background: #fff;
-            border-radius: 20px;
+            border-radius: 18px;
             padding: 20px;
             margin-top: 20px;
             border: 1px solid #f0f0f0;
             box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            animation: fadeIn 0.4s ease-out;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between; /* يوزع العنوان يمين والقيمة يسار */
-            align-items: center;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #f9f9f9;
         }
-
-        .info-row:last-child { border-bottom: none; }
 
         .label {
             font-weight: bold;
             color: var(--primary);
-            font-size: 14px;
+            text-align: right;
         }
 
         .value {
-            color: var(--text-main);
-            font-size: 15px;
-            font-weight: 500;
-            direction: ltr; /* لجعل الـ IMEI والأرقام تظهر بشكل صحيح من اليسار لليمين */
+            color: #333;
+            text-align: left;
+            direction: ltr; /* لضمان ظهور الـ IMEI والأرقام بشكل صحيح */
         }
 
-        /* أزرار التواصل */
         .actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-top: 20px;
         }
 
@@ -131,33 +102,22 @@
             padding: 12px;
             border-radius: 12px;
             font-size: 14px;
+            text-align: center;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
         }
 
         .call { background: var(--success); }
         .whatsapp { background: var(--whatsapp); }
-        
-        .btn-act:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status">جاري مزامنة البيانات...</div>
+    <div id="status" style="color: #666;">🔄 جاري تحميل البيانات...</div>
     
     <div class="search-area">
-        <input type="text" id="q" placeholder="IMEI، اسم الجهاز، أو رقم الهاتف">
-        <button onclick="doSearch()">🔍 ابـحـث الآن</button>
+        <input type="text" id="q" placeholder="أدخل IMEI أو الاسم للبحث...">
+        <button onclick="doSearch()">بـحـث</button>
     </div>
 
     <div id="results"></div>
@@ -165,198 +125,71 @@
 
 <script>
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
-    let data = [];
+    let database = [];
 
+    // جلب البيانات
     fetch(url)
         .then(res => res.text())
         .then(csv => {
-            data = csv.split('\n').map(row => row.split(',').map(c => c.replace(/"/g, '').trim()));
-            document.getElementById
-
-        .header h1 {
-            font-size: 22px;
-            color: #333;
-            margin: 0;
-        }
-
-        #status-badge {
-            display: inline-block;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 50px;
-            background: #eee;
-            margin-top: 10px;
-            color: #666;
-        }
-
-        .search-box {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid #e1e4e8;
-            border-radius: 14px;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
-            text-align: center;
-        }
-
-        input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
-        }
-
-        button {
-            width: 100%;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        button:active { transform: scale(0.98); }
-
-        .result-card {
-            background: #fff;
-            border: 1px solid #edf0f2;
-            border-right: 6px solid var(--primary-color);
-            padding: 18px;
-            margin-top: 20px;
-            border-radius: 14px;
-            animation: slideIn 0.3s ease;
-        }
-
-        .info-row {
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px dashed #eee;
-            padding-bottom: 5px;
-        }
-
-        .info-label { font-weight: bold; color: var(--primary-color); }
-        .info-value { color: #444; }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-action {
-            flex: 1;
-            text-decoration: none;
-            color: white !important;
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .btn-call { background: var(--success-color); }
-        .btn-wa { background: var(--whatsapp-color); }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body>
-
-<div class="app-card">
-    <div class="header">
-        <h1>📱 قاعدة بيانات الأجهزة</h1>
-        <div id="status-badge">جاري الاتصال بالسيرفر...</div>
-    </div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="ابحث عن IMEI أو اسم أو رقم...">
-        <button onclick="executeSearch()">بـحـث الآن</button>
-    </div>
-
-    <div id="resultsWrapper"></div>
-</div>
-
-<script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
-    let rawData = [];
-
-    // جلب البيانات فور تحميل الصفحة
-    fetch(csvUrl)
-        .then(res => res.text())
-        .then(data => {
-            rawData = data.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '').trim()));
-            document.getElementById('status-badge').innerHTML = "🟢 متصل والبيانات محدثة";
-            document.getElementById('status-badge').style.background = "#e6f4ea";
-            document.getElementById('status-badge').style.color = "#1e7e34";
+            // تحويل النص إلى مصفوفة وتجنب الصفوف الفارغة
+            database = csv.split('\n').filter(row => row.trim() !== '').map(row => 
+                row.split(',').map(cell => cell.replace(/"/g, '').trim())
+            );
+            document.getElementById('status').innerHTML = "🟢 البيانات جاهزة";
+            document.getElementById('status').style.color = "#28a745";
         })
-        .catch(() => {
-            document.getElementById('status-badge').innerHTML = "🔴 خطأ في المزامنة";
-            document.getElementById('status-badge').style.background = "#fce8e6";
-            document.getElementById('status-badge').style.color = "#d93025";
+        .catch(err => {
+            document.getElementById('status').innerHTML = "🔴 فشل في المزامنة";
+            document.getElementById('status').style.color = "#dc3545";
         });
 
-    function executeSearch() {
-        const query = document.getElementById('searchInput').value.trim().toLowerCase();
-        const wrapper = document.getElementById('resultsWrapper');
-        wrapper.innerHTML = "";
+    function doSearch() {
+        const query = document.getElementById('q').value.trim().toLowerCase();
+        const resDiv = document.getElementById('results');
+        resDiv.innerHTML = "";
         
-        if (!query) return;
+        if (!query || database.length === 0) return;
 
-        const headers = rawData[0];
-        let hasResults = false;
+        const headers = database[0];
+        let found = false;
 
-        for (let i = 1; i < rawData.length; i++) {
-            const row = rawData[i];
+        for (let i = 1; i < database.length; i++) {
+            const row = database[i];
             if (row.join(" ").toLowerCase().includes(query)) {
-                hasResults = true;
+                found = true;
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 
-                let rowsHtml = "";
-                let phoneNum = "";
+                let html = "";
+                let phone = "";
 
                 row.forEach((cell, idx) => {
                     if (cell) {
                         const label = headers[idx] || "بيان";
-                        if (label.toLowerCase().includes('phone')) phoneNum = cell;
+                        // حفظ رقم الهاتف للأزرار
+                        if (label.toLowerCase().includes('phone')) phone = cell;
                         
-                        rowsHtml += `<div class="info-row">
-                                        <span class="info-label">${label}</span>
-                                        <span class="info-value">${cell}</span>
-                                     </div>`;
+                        html += `
+                            <div class="info-row">
+                                <span class="label">${label}</span>
+                                <span class="value">${cell}</span>
+                            </div>`;
                     }
                 });
 
-                if (phoneNum) {
-                    rowsHtml += `
-                        <div class="action-buttons">
-                            <a href="tel:${phoneNum}" class="btn-action btn-call">📞 اتصال</a>
-                            <a href="https://wa.me/${phoneNum.replace(/\D/g,'')}" target="_blank" class="btn-action btn-wa">💬 واتساب</a>
+                if (phone) {
+                    html += `
+                        <div class="actions">
+                            <a href="tel:${phone}" class="btn-act call">📞 اتصال</a>
+                            <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 واتساب</a>
                         </div>`;
                 }
 
-                card.innerHTML = rowsHtml;
-                wrapper.appendChild(card);
+                card.innerHTML = html;
+                resDiv.appendChild(card);
             }
         }
-        if (!hasResults) wrapper.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>عذراً، لا توجد نتائج مطابقة</p>";
+        if (!found) resDiv.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>لا توجد نتائج</p>";
     }
 </script>
 
