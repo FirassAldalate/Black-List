@@ -37,7 +37,6 @@
             font-weight: 900;
             color: #000;
             margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
         }
 
         .sub-title {
@@ -48,21 +47,6 @@
             font-weight: bold;
             letter-spacing: 1px;
         }
-
-        /* مربع التعليمات الجديد */
-        .instructions-box {
-            background-color: #f8f9fa;
-            border-right: 4px solid #000;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #444;
-            line-height: 1.6;
-        }
-
-        .instructions-box b { color: #000; display: block; margin-bottom: 5px; }
-        .instructions-box ul { margin: 5px 0; padding-right: 20px; }
 
         .search-select {
             width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee;
@@ -80,10 +64,27 @@
             margin-top: 15px; cursor: pointer; transition: 0.3s;
         }
 
+        /* مربع التعليمات */
+        #instructions {
+            background-color: #f8f9fa;
+            border-right: 4px solid #000;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px; /* أصبح تحت البحث */
+            font-size: 13px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        #instructions b { color: #000; display: block; margin-bottom: 5px; }
+
         .result-card {
             background: #fff; border-radius: 25px; padding: 25px;
             margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease;
         }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .info-row {
             display: flex; justify-content: space-between;
@@ -113,12 +114,6 @@
     <div class="main-title">القائمة السوداء</div>
     <div class="sub-title">BLACK LIST DATABASE</div>
     
-    <div class="instructions-box">
-        <b>💡 تعليمات الاستخدام:</b>
-        • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span> أو تفقد علبة الجهاز.<br>
-        • <b>تنبيه:</b> عدم ظهور الجهاز هنا لا يعني بالضرورة أنه سليم؛ قد يكون صاحبه لم يقم بالتعميم عنه، أو لم تصل بياناته إلى النظام بعد.
-    </div>
-
     <div class="search-area">
         <select id="searchType" class="search-select">
             <option value="imei">البحث عن طريق IMEI</option>
@@ -127,7 +122,13 @@
         </select>
         
         <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
-        <button onclick="doSearch()">كشف الحالة</button>
+        <button onclick="doSearch()">البحث في القائمة السوداء</button>
+    </div>
+
+    <div id="instructions">
+        <b>💡 تعليمات الاستخدام:</b>
+        • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span> أو تفقد علبة الجهاز.<br>
+        • <b>تنبيه:</b> عدم ظهور الجهاز هنا لا يعني بالضرورة أنه سليم؛ قد يكون صاحبه لم يقم بالتعميم عنه، أو لم تصل بياناته إلى النظام بعد.
     </div>
 
     <div id="results"></div>
@@ -147,9 +148,14 @@
         const query = document.getElementById('q').value.trim();
         const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
+        const insBox = document.getElementById('instructions');
+        
         resDiv.innerHTML = "";
         
         if (!query || database.length === 0) return;
+
+        // إخفاء مربع التعليمات عند البحث
+        insBox.style.display = "none";
 
         const headers = database[0];
         let foundResults = [];
