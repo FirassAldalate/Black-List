@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام البحث الاحترافي</title>
+    <title>نظام البحث المطور</title>
     <style>
         :root {
-            --primary: #007bff;
+            --primary: #007bff; /* اللون الأزرق الأساسي */
             --success: #28a745;
             --whatsapp: #25d366;
             --bg: #f8f9fa;
@@ -50,19 +50,21 @@
 
         .info-row {
             display: flex;
-            justify-content: space-between; /* توزيع العناصر */
+            justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px solid #f9f9f9;
-            flex-direction: row-reverse; /* عكس الاتجاه لجعل العنوان يسار والقيمة يمين */
+            flex-direction: row-reverse; /* يجعل العنوان يسار والقيمة يمين */
         }
 
+        /* تنسيق العنوان - تمت إعادته للأزرق */
         .label {
             font-weight: bold;
-            color: #888; /* لون رمادي هادئ للعناوين */
+            color: var(--primary) !important; 
             text-align: left;
-            min-width: 80px;
+            min-width: 90px;
         }
 
+        /* تنسيق القيمة الافتراضي */
         .value {
             color: #333;
             text-align: right;
@@ -70,12 +72,12 @@
             direction: ltr;
         }
 
-        /* تنسيق الألوان الذكية */
-        .color-gold { color: #D4AF37 !important; text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1); }
-        .color-silver { color: #C0C0C0 !important; }
-        .color-black { color: #000000 !important; }
-        .color-blue { color: #0000FF !important; }
-        .color-red { color: #FF0000 !important; }
+        /* تعريف ألوان القيم الذكية */
+        .clr-gold { color: #D4AF37 !important; }
+        .clr-silver { color: #95a5a6 !important; }
+        .clr-black { color: #000000 !important; }
+        .clr-blue { color: #0056b3 !important; }
+        .clr-red { color: #d63031 !important; }
 
         .actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn-act {
@@ -90,9 +92,9 @@
 <body>
 
 <div class="container">
-    <div id="status" style="color: #666;">🔄 جاري تحميل البيانات...</div>
+    <div id="status" style="color: #666;">🔄 جاري مزامنة البيانات...</div>
     <div class="search-area">
-        <input type="text" id="q" placeholder="أدخل IMEI أو الاسم...">
+        <input type="text" id="q" placeholder="IMEI أو اسم الجهاز...">
         <button onclick="doSearch()">بـحـث</button>
     </div>
     <div id="results"></div>
@@ -109,16 +111,17 @@
         document.getElementById('status').innerHTML = "🟢 البيانات جاهزة";
         document.getElementById('status').style.color = "#28a745";
     }).catch(() => {
-        document.getElementById('status').innerHTML = "🔴 فشل المزامنة";
+        document.getElementById('status').innerHTML = "🔴 خطأ في المزامنة";
     });
 
-    function getColorClass(text) {
+    // وظيفة تحديد لون القيمة بناءً على النص
+    function applyDynamicColor(text) {
         const val = text.toLowerCase();
-        if (val.includes('gold') || val.includes('ذهبي')) return 'color-gold';
-        if (val.includes('silver') || val.includes('فضي')) return 'color-silver';
-        if (val.includes('black') || val.includes('أسود')) return 'color-black';
-        if (val.includes('blue') || val.includes('أزرق')) return 'color-blue';
-        if (val.includes('red') || val.includes('أحمر')) return 'color-red';
+        if (val.includes('gold') || val.includes('ذهبي')) return 'clr-gold';
+        if (val.includes('silver') || val.includes('فضي')) return 'clr-silver';
+        if (val.includes('black') || val.includes('أسود')) return 'clr-black';
+        if (val.includes('blue') || val.includes('أزرق')) return 'clr-blue';
+        if (val.includes('red') || val.includes('أحمر')) return 'clr-red';
         return '';
     }
 
@@ -141,8 +144,8 @@
                         const label = headers[idx] || "بيان";
                         if (label.toLowerCase().includes('phone')) phone = cell;
                         
-                        // تطبيق اللون الذكي إذا كان الحقل يخص اللون أو اسم الجهاز
-                        const colorClass = (label.toLowerCase().includes('color') || label.toLowerCase().includes('اللون')) ? getColorClass(cell) : '';
+                        // فحص إذا كان يجب تلوين القيمة (في عمود اللون أو اسم الجهاز)
+                        const colorClass = applyDynamicColor(cell);
                         
                         html += `
                             <div class="info-row">
