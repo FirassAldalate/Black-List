@@ -3,138 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>القائمة السوداء</title>
+    <title>القائمة السوداء - Matrix</title>
     <style>
         :root {
-            --primary: #2c3e50;
+            --matrix-green: #00FF41;
             --accent: #e74c3c;
-            --success: #27ae60;
-            --whatsapp: #25d366;
-            --bg: #1a1a1a;
+            --bg-dark: #000000;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow-x: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+        }
+
+        /* كود خلفية الماتريكس */
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0; z-index: -1;
+        }
+
+        .wrapper {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
         }
 
         .container {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            width: 100%; max-width: 450px; background: rgba(255, 255, 255, 0.95);
+            padding: 30px; border-radius: 30px; box-shadow: 0 0 30px var(--matrix-green);
+            backdrop-filter: blur(5px); position: relative;
         }
 
         .main-title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 900;
-            color: #000;
-            margin-bottom: 5px;
+            text-align: center; font-size: 30px; font-weight: 900; color: #000;
+            margin-bottom: 5px; text-shadow: 2px 2px 0px var(--matrix-green);
         }
 
         .sub-title {
-            text-align: center;
-            font-size: 11px;
-            color: #e74c3c;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            text-align: center; font-size: 11px; color: var(--accent);
+            margin-bottom: 25px; font-weight: bold; letter-spacing: 2px;
         }
 
-        .search-select {
-            width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee;
-            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none;
-        }
-
-        .search-area input {
-            width: 100%; padding: 18px; border: 2px solid #eee; border-radius: 20px;
-            font-size: 16px; box-sizing: border-box; outline: none; text-align: center;
+        .search-select, .search-area input {
+            width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #ddd;
+            margin-bottom: 12px; font-size: 16px; font-weight: bold; outline: none;
+            box-sizing: border-box; text-align: center;
         }
 
         .search-area button {
-            width: 100%; background: #000; color: white; border: none;
+            width: 100%; background: #000; color: var(--matrix-green); border: 2px solid var(--matrix-green);
             padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
-            margin-top: 15px; cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
         }
 
-        /* مربع التعليمات */
+        .search-area button:hover {
+            background: var(--matrix-green); color: #000; box-shadow: 0 0 20px var(--matrix-green);
+        }
+
         #instructions {
-            background-color: #f8f9fa;
-            border-right: 4px solid #000;
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 20px; /* أصبح تحت البحث */
-            font-size: 13px;
-            color: #444;
-            line-height: 1.6;
+            background-color: #f0f0f0; border-right: 5px solid #000;
+            padding: 15px; border-radius: 12px; margin-top: 20px;
+            font-size: 13px; color: #333; line-height: 1.6;
         }
-
-        #instructions b { color: #000; display: block; margin-bottom: 5px; }
 
         .result-card {
             background: #fff; border-radius: 25px; padding: 25px;
-            margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-top: 25px; border: 2px solid var(--matrix-green);
             animation: fadeIn 0.5s ease;
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .info-row {
-            display: flex; justify-content: space-between;
-            padding: 12px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse;
+            display: flex; justify-content: space-between; padding: 12px 0;
+            border-bottom: 1px solid #eee; flex-direction: row-reverse;
         }
 
-        .label { font-weight: bold; color: var(--accent); min-width: 90px; text-align: left; }
-        .value { color: #333; font-weight: 600; direction: ltr; text-align: right; }
+        .label { font-weight: bold; color: var(--accent); text-align: left; }
+        .value { color: #000; font-weight: 600; direction: ltr; text-align: right; }
 
         .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .btn-act {
             text-decoration: none; color: white !important; padding: 16px;
             border-radius: 18px; font-size: 15px; text-align: center; font-weight: bold;
         }
-        .call { background: #000; }
-        .whatsapp { background: var(--whatsapp); }
+        .call { background: #000; border: 1px solid var(--matrix-green); color: var(--matrix-green) !important; }
+        .whatsapp { background: #25d366; }
 
-        .error-msg {
-            background: #fff5f5; color: var(--accent); padding: 20px;
-            border-radius: 15px; margin-top: 20px; text-align: center; font-weight: bold;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="main-title">القائمة السوداء</div>
-    <div class="sub-title">BLACK LIST DATABASE</div>
-    
-    <div class="search-area">
-        <select id="searchType" class="search-select">
-            <option value="imei">البحث عن طريق IMEI</option>
-            <option value="serial">البحث عن طريق Serial Number</option>
-            <option value="name">البحث عن طريق اسم الهاتف</option>
-        </select>
+<canvas id="matrix-canvas"></canvas>
+
+<div class="wrapper">
+    <div class="container">
+        <div class="main-title">القائمة السوداء</div>
+        <div class="sub-title">DATABASE DECRYPTION</div>
         
-        <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
-        <button onclick="doSearch()">البحث في القائمة السوداء</button>
-    </div>
+        <div class="search-area">
+            <select id="searchType" class="search-select">
+                <option value="imei">IMEI التحقق عبر</option>
+                <option value="serial">Serial Number التحقق عبر</option>
+                <option value="name">اسم الهاتف (بحث عام)</option>
+            </select>
+            
+            <input type="text" id="q" placeholder="أدخل البيانات...">
+            <button onclick="doSearch()">البحث في القائمة السوداء</button>
+        </div>
 
-    <div id="instructions">
-        <b>💡 تعليمات الاستخدام:</b>
-        • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span> أو تفقد علبة الجهاز.<br>
-        • <b>تنبيه:</b> عدم ظهور الجهاز هنا لا يعني بالضرورة أنه سليم؛ قد يكون صاحبه لم يقم بالتعميم عنه، أو لم تصل بياناته إلى النظام بعد.
-    </div>
+        <div id="instructions">
+            <b>💡 تعليمات النظام:</b>
+            • للحصول على <b>IMEI</b>: اطلب الكود <span dir="ltr">*#06#</span><br>
+            • <b>ملاحظة:</b> عدم الوجود في القائمة لا يعني السلامة المطلقة؛ قد لا يكون تم التعميم أو لم تصل البيانات للنظام بعد.
+        </div>
 
-    <div id="results"></div>
+        <div id="results"></div>
+    </div>
 </div>
 
 <script>
+    // --- كود خلفية الماتريكس المتحركة ---
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%'\"#&_(),.;:?!\\|{}<>[]^~";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px monospace";
+        for (let i = 0; i < drops.length; i++) {
+            const text = characters.charAt(Math.floor(Math.random() * characters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 35);
+
+    // --- كود البحث والبيانات ---
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
     let database = [];
 
@@ -149,32 +160,21 @@
         const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
         const insBox = document.getElementById('instructions');
-        
         resDiv.innerHTML = "";
-        
         if (!query || database.length === 0) return;
 
-        // إخفاء مربع التعليمات عند البحث
         insBox.style.display = "none";
-
         const headers = database[0];
         let foundResults = [];
 
         for (let i = 1; i < database.length; i++) {
             const row = database[i];
             let isMatch = false;
-
             row.forEach((cell, idx) => {
                 const headerName = headers[idx].toLowerCase();
-                if (searchType === 'imei' && headerName.includes('imei')) {
-                    if (cell === query) isMatch = true;
-                } 
-                else if (searchType === 'serial' && (headerName.includes('serial') || headerName.includes('سيريال'))) {
-                    if (cell === query) isMatch = true;
-                }
-                else if (searchType === 'name' && (headerName.includes('name') || headerName.includes('اسم') || headerName.includes('device'))) {
-                    if (cell.toLowerCase().includes(query.toLowerCase())) isMatch = true;
-                }
+                if (searchType === 'imei' && headerName.includes('imei') && cell === query) isMatch = true;
+                else if (searchType === 'serial' && headerName.includes('serial') && cell === query) isMatch = true;
+                else if (searchType === 'name' && (headerName.includes('name') || headerName.includes('اسم')) && cell.toLowerCase().includes(query.toLowerCase())) isMatch = true;
             });
             if (isMatch) foundResults.push(row);
         }
@@ -184,32 +184,28 @@
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 let html = ""; let phone = "";
-
                 foundRow.forEach((cell, idx) => {
                     if (cell) {
-                        const label = headers[idx] || "بيان";
-                        let displayValue = cell;
-
-                        if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
+                        const label = headers[idx];
+                        let val = cell;
+                        if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('رقم')) {
                             phone = cell;
-                            if (searchType === 'name') displayValue = "⚠️ مخفي للخصوصية";
+                            if (searchType === 'name') val = "⚠️ مخفي للخصوصية";
                         }
-                        
-                        html += `<div class="info-row"><span class="label">${label}</span><span class="value">${displayValue}</span></div>`;
+                        html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
                     }
                 });
-
                 if (phone && searchType !== 'name') {
                     html += `<div class="actions">
                         <a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a>
-                        <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة واتساب</a>
+                        <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 واتساب</a>
                     </div>`;
                 }
                 card.innerHTML = html;
                 resDiv.appendChild(card);
             });
         } else {
-            resDiv.innerHTML = `<div class="error-msg">⚠️ لا توجد نتائج مطابقة في القائمة السوداء</div>`;
+            resDiv.innerHTML = `<div style="color:red; text-align:center; font-weight:bold; margin-top:20px;">⚠️ لا توجد نتائج مطابقة</div>`;
         }
     }
 </script>
