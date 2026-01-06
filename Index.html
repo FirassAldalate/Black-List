@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* التنسيق العام ليناسب بلوغر */
+        .search-container { max-width: 500px; margin: 10px auto; font-family: sans-serif; direction: rtl; }
+        .search-input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        .search-btn { width: 100%; background: #007bff; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        .res-card { background: #fff; border: 1px solid #eee; padding: 15px; margin-top: 15px; border-radius: 10px; border-right: 5px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .res-line { margin-bottom: 8px; font-size: 15px; color: #333; }
+        .res-label { font-weight: bold; color: #007bff; margin-left: 5px; }
+        
+        /* تنسيق زر الاتصال */
+        .call-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #28a745;
+            color: white !important;
+            padding: 5px 15px;
+            border-radius: 50px;
+            text-decoration: none !important;
+            font-weight: bold;
+            margin-top: 5px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .call-btn:hover { background-color: #218838; }
+        #status-msg { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <div id="status-msg">جاري تحميل قاعدة البيانات...</div>
+    <input type="text" id="userInput" placeholder="ابحث عن IMEI أو نوع الجهاز...">
+    <button class="search-btn" onclick="startSearch()">بـحـث</button>
+    <div id="resultsArea"></div>
+</div>
+
+<script>
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
+    let localData = [];
+
+    // جلب البيانات
+    fetch(sheetUrl)
+        .then(res => res.text())
+        .then(csv => {
+            localData = csv.split('\n').map(r => r.split(',').map(c => c.replace(/"/g, '').trim()));
+            document.getElementById('status-msg').innerText = "✅ البيانات محدثة وجاهزة";
+        })
+        .catch(err => {
+            document.getElementById('status-msg').innerText = "❌ فشل الاتصال بالبيانات";
+        });
+
+    function startSearch() {
+        const query = document.getElementById('userInput').value.trim().toLowerCase();
+        const area = document.getElementById('resultsArea');
+        area.innerHTML = "";
+        
+        if (!query) return;
+
+        const headers = localData[0];
+        let foundAny = false;
+
+        for (let i = 1; i < localData.length; i++) {
+            const row = localData[i];
+            if (row.join(" ").toLowerCase().includes(query)) {
+                foundAny = true;
+                const card = document.createElement('div');
+                card.className = 'res-card';
+                
+                let htmlContent = "";
+                row.forEach((cell, idx) => {
+                    if(cell) {
+                        let label = headers[idx] || "معلومة";
+                        let val = cell;
+
+                        // إذا كان العمود هو الهاتف، نحوله لزر اتصال
+                        if (label.toLowerCase().includes('phone')) {
+                            val = `<a href="tel:${cell}" class="call-btn">📞 إضغط للاتصال: ${cell}</a>`;
+                        }
+
+                        htmlContent += `<div class="res-line"><span class="res-label">${label}:</span> ${val}</div>`;
+                    }
+                });
+                card.innerHTML = htmlContent;
+                area.appendChild(card);
+            }
+        }
+
+        if (!foundAny) area.innerHTML = "<p style='text-align:center; color: #999;'>لا يوجد نتائج مطابقة</p>";
+    }
+</script>
+
+</body>
+</html>
