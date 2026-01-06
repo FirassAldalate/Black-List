@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>القائمة السوداء - البحث الذكي</title>
+    <title>القائمة السوداء</title>
     <style>
         :root {
-            --primary: #000000;
+            --primary: #2c3e50;
             --accent: #e74c3c;
             --success: #27ae60;
-            --whatsapp: #25d366;
             --bg: #1a1a1a;
         }
 
@@ -28,135 +27,177 @@
             background: white;
             padding: 25px;
             border-radius: 30px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
         }
 
-        .main-title { text-align: center; font-size: 26px; font-weight: 900; color: #000; margin-bottom: 5px; }
-        .sub-title { text-align: center; font-size: 10px; color: var(--accent); margin-bottom: 20px; font-weight: bold; letter-spacing: 1px; }
+        .main-title { text-align: center; font-size: 28px; font-weight: 900; color: #000; margin-bottom: 5px; }
+        .sub-title { text-align: center; font-size: 11px; color: var(--accent); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
 
-        #status-text { text-align: center; font-size: 12px; display: block; margin-bottom: 15px; color: var(--success); font-weight: bold; }
+        #status-container { margin-bottom: 20px; text-align: center; }
+        #status-text { font-size: 12px; margin-bottom: 8px; font-weight: bold; color: #888; display: block; }
+
+        .progress-bar { width: 100%; height: 4px; background-color: #eee; border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-line { width: 40%; height: 100%; background-color: var(--accent); position: absolute; left: -40%; border-radius: 10px; animation: loading 1.5s infinite linear; }
+
+        @keyframes loading {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
 
         .search-select, .search-area input {
-            width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #f0f0f0;
-            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box; text-align: center; background: #fafafa;
+            width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee;
+            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box;
         }
 
         .search-area button {
-            width: 100%; background: var(--primary); color: white; border: none;
-            padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            width: 100%; background: #000; color: white; border: none;
+            padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
+            margin-top: 5px; cursor: pointer;
         }
 
-        .search-area button:active { transform: scale(0.98); }
+        #instructions {
+            background-color: #f8f9fa; border-right: 4px solid #000;
+            padding: 15px; border-radius: 12px; margin-top: 20px;
+            font-size: 13px; color: #444; line-height: 1.6;
+        }
 
         .result-card {
-            background: #fff; border-radius: 20px; padding: 20px;
-            margin-top: 25px; border-right: 6px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            animation: fadeIn 0.4s ease;
+            background: #fff; border-radius: 25px; padding: 25px;
+            margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            animation: slideUp 0.4s ease;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f9f9f9; flex-direction: row-reverse; }
-        .label { font-weight: bold; color: var(--accent); font-size: 13px; text-align: left; }
-        .value { color: #333; font-weight: 600; direction: ltr; text-align: right; font-size: 13px; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse; }
+        .label { font-weight: bold; color: var(--accent); min-width: 90px; text-align: left; }
+        .value { color: #333; font-weight: 600; direction: ltr; text-align: right; }
 
-        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-act { text-decoration: none; color: white !important; padding: 14px; border-radius: 12px; font-size: 14px; text-align: center; font-weight: bold; display: block; }
+        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .btn-act { text-decoration: none; color: white !important; padding: 16px; border-radius: 18px; font-size: 15px; text-align: center; font-weight: bold; }
+        .call { background: #000; }
         
-        .error-msg { background: #fff5f5; color: var(--accent); padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; font-weight: bold; font-size: 14px; }
+        .error-msg { background: #fff5f5; color: var(--accent); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title">القائمة السوداء</div>
-    <div class="sub-title">DATABASE CLOUD SEARCH</div>
+    <div class="sub-title">BLACK LIST DATABASE</div>
     
-    <span id="status-text">🟢 النظام متصل بالسيرفر</span>
+    <div id="status-container">
+        <span id="status-text">🔄 جاري الاتصال بالسيرفر...</span>
+        <div id="loader" class="progress-bar"><div class="progress-line"></div></div>
+    </div>
     
     <div class="search-area">
         <select id="searchType" class="search-select">
-            <option value="0">البحث بواسطة IMEI</option>
-            <option value="1">البحث بواسطة السيريال</option>
-            <option value="2">البحث بواسطة اسم الجهاز</option>
+            <option value="imei">البحث عن طريق IMEI</option>
+            <option value="serial">البحث عن طريق Serial Number</option>
+            <option value="name">البحث عن طريق اسم الهاتف</option>
         </select>
-        <input type="text" id="q" placeholder="أدخل البيانات المطلوبة هنا...">
-        <button onclick="doSearch()">بدء عملية الفحص</button>
+        <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
+        <button onclick="doSearch()">البحث في القائمة السوداء</button>
+    </div>
+
+    <div id="instructions">
+        <b>💡 تعليمات الاستخدام:</b>
+        • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span><br>
+         <b>تنبيه:</b> عدم ظهور الجهاز لا يعني أنه سليم؛ قد يكون صاحبه لم يعمم عنه، أو لم تصل البيانات للنظام بعد.
     </div>
 
     <div id="results"></div>
 </div>
 
 <script>
-    // الرابط المباشر للملف (يجب أن يكون ملف الإكسل "عام" للجميع للرؤية)
-    const sheetId = '1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI';
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tq=`;
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
+    let database = [];
 
-    async function doSearch() {
-        const query = document.getElementById('q').value.trim();
-        const colIdx = document.getElementById('searchType').value;
-        const resDiv = document.getElementById('results');
-
-        if (!query) return;
-        resDiv.innerHTML = "<p style='text-align:center; font-weight:bold; color:#888;'>🔍 جاري معالجة الاستعلام...</p>";
-
-        // تحويل الفهرس إلى حروف الأعمدة (0=A, 1=B, 2=C)
-        const colLetter = String.fromCharCode(65 + parseInt(colIdx));
-        
-        // بناء الاستعلام: اختيار كل الصفوف التي يحتوي العمود المحدد فيها على قيمة البحث
-        const sql = `SELECT * WHERE ${colLetter} LIKE '%${query}%'`;
-        const finalUrl = sheetUrl + encodeURIComponent(sql);
-
+    async function loadData() {
         try {
-            const response = await fetch(finalUrl);
-            const text = await response.text();
+            const response = await fetch(url);
+            const data = await response.text();
+            database = data.split('\n').filter(row => row.trim() !== '').map(row => 
+                row.split(',').map(cell => cell.replace(/"/g, '').trim())
+            );
             
-            // معالجة استجابة جوجل لفك التشفير وتحويلها لـ JSON
-            const jsonText = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/);
-            if (!jsonText) throw new Error("Format Error");
-
-            const data = JSON.parse(jsonText[1]);
-            const rows = data.table.rows;
-            const cols = data.table.cols;
-
-            resDiv.innerHTML = "";
-
-            if (rows && rows.length > 0) {
-                rows.forEach(row => {
-                    const card = document.createElement('div');
-                    card.className = 'result-card';
-                    let html = "";
-                    let phone = "";
-
-                    row.c.forEach((cell, idx) => {
-                        if (cell && cell.v !== null) {
-                            const label = cols[idx].label || `بيان ${idx+1}`;
-                            let val = cell.v;
-
-                            // منطق الهاتف والخصوصية
-                            if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف')) {
-                                phone = val;
-                                if (colIdx == "2") val = "⚠️ مخفي للخصوصية";
-                            }
-                            html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
-                        }
-                    });
-
-                    if (phone && colIdx != "2") {
-                        html += `<div class="actions">
-                            <a href="tel:${phone}" class="btn-act" style="background:#000;">📞 اتصال بالمالك</a>
-                            <a href="https://wa.me/${phone.toString().replace(/\D/g,'')}" target="_blank" class="btn-act" style="background:#25d366;">💬 واتساب</a>
-                        </div>`;
-                    }
-                    card.innerHTML = html;
-                    resDiv.appendChild(card);
-                });
-            } else {
-                resDiv.innerHTML = "<div class='error-msg'>⚠️ لا توجد نتائج مطابقة في قاعدة البيانات</div>";
-            }
+            document.getElementById('loader').style.display = "none";
+            document.getElementById('status-text').innerHTML = "🟢 السيرفر جاهز";
+            document.getElementById('status-text').style.color = "#27ae60";
         } catch (error) {
-            console.error(error);
-            resDiv.innerHTML = "<div class='error-msg'>❌ عذراً، تعذر الوصول للسيرفر حالياً. يرجى المحاولة لاحقاً.</div>";
+            document.getElementById('status-text').innerHTML = "🔴 فشل الاتصال بالسيرفر";
+            document.getElementById('status-text').style.color = "#e74c3c";
+        }
+    }
+
+    loadData();
+
+    function doSearch() {
+        const query = document.getElementById('q').value.trim().toLowerCase();
+        const searchType = document.getElementById('searchType').value;
+        const resDiv = document.getElementById('results');
+        const insBox = document.getElementById('instructions');
+        
+        if (database.length === 0) return;
+
+        resDiv.innerHTML = "";
+        if (!query) return;
+        insBox.style.display = "none";
+
+        const headers = database[0];
+        let foundResults = [];
+
+        for (let i = 1; i < database.length; i++) {
+            const row = database[i];
+            let isMatch = false;
+
+            row.forEach((cell, idx) => {
+                const head = headers[idx] ? headers[idx].toLowerCase() : "";
+                const cellValue = cell ? cell.toLowerCase() : "";
+
+                if (searchType === 'imei') {
+                    if (head.includes('imei') && cellValue === query) isMatch = true;
+                } 
+                else if (searchType === 'serial') {
+                    if ((head.includes('serial') || head.includes('سيريال')) && cellValue === query) isMatch = true;
+                }
+                else if (searchType === 'name') {
+                    const isNameHeader = head.includes('name') || head.includes('اسم') || head.includes('device') || head.includes('type') || head.includes('نوع') || head.includes('جهاز');
+                    if (isNameHeader && cellValue.includes(query)) isMatch = true;
+                }
+            });
+            if (isMatch) foundResults.push(row);
+        }
+
+        if (foundResults.length > 0) {
+            foundResults.forEach(foundRow => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                let html = ""; let phone = "";
+
+                foundRow.forEach((cell, idx) => {
+                    if (cell) {
+                        const label = headers[idx] || "بيان";
+                        let val = cell;
+                        if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
+                            phone = cell;
+                            if (searchType === 'name') val = "⚠️ مخفي للخصوصية";
+                        }
+                        html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
+                    }
+                });
+
+                if (phone && searchType !== 'name') {
+                    html += `<div class="actions">
+                        <a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a>
+                    </div>`;
+                }
+                card.innerHTML = html;
+                resDiv.appendChild(card);
+            });
+        } else {
+            resDiv.innerHTML = `<div class="error-msg">⚠️ لا توجد نتائج مطابقة</div>`;
         }
     }
 </script>
