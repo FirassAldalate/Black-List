@@ -55,7 +55,6 @@
             margin-top: 5px; cursor: pointer;
         }
 
-        /* تنسيق رابط إضافة بلاغ جديد */
         .add-report-link {
             display: block;
             text-align: center;
@@ -67,12 +66,6 @@
             padding: 10px;
             border: 1px dashed var(--accent);
             border-radius: 15px;
-            transition: 0.3s;
-        }
-
-        .add-report-link:active {
-            background-color: #fff5f5;
-            transform: scale(0.98);
         }
 
         #instructions {
@@ -119,14 +112,13 @@
         </select>
         <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
         <button onclick="doSearch()">البحث في القائمة السوداء</button>
-        
-        <a href="add.html" class="add-report-link">➕ هل تريد إضافة بلاغ جديد؟ اضغط هنا</a>
+        <a href="add.html" class="add-report-link" id="addBtn">➕ هل تريد إضافة بلاغ جديد؟ اضغط هنا</a>
     </div>
 
     <div id="instructions">
         <b>💡 تعليمات الاستخدام:</b>
         • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span><br>
-         <b>تنبيه:</b> عدم ظهور الجهاز لا يعني أنه سليم؛ قد يكون صاحبه لم يعمم عنه، أو لم تصل البيانات للنظام بعد.
+         <b>تنبيه:</b> عدم ظهور الجهاز لا يعني أنه سليم؛ قد يكون صاحبه لم يعمم عنه، أو لم تصل بياناته للنظام بعد.
     </div>
 
     <div id="results"></div>
@@ -143,7 +135,6 @@
             database = data.split('\n').filter(row => row.trim() !== '').map(row => 
                 row.split(',').map(cell => cell.replace(/"/g, '').trim())
             );
-            
             document.getElementById('loader').style.display = "none";
             document.getElementById('status-text').innerHTML = "🟢 السيرفر جاهز";
             document.getElementById('status-text').style.color = "#27ae60";
@@ -160,15 +151,11 @@
         const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
         const insBox = document.getElementById('instructions');
-        const addLink = document.querySelector('.add-report-link');
         
-        if (database.length === 0) return;
+        if (database.length === 0 || !query) return;
 
         resDiv.innerHTML = "";
-        if (!query) return;
-        
         insBox.style.display = "none";
-        addLink.style.display = "none"; // إخفاء زر الإضافة عند ظهور النتائج لترتيب الصفحة
 
         const headers = database[0];
         let foundResults = [];
@@ -200,7 +187,6 @@
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 let html = ""; let phone = "";
-
                 foundRow.forEach((cell, idx) => {
                     if (cell) {
                         const label = headers[idx] || "بيان";
@@ -212,18 +198,14 @@
                         html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
                     }
                 });
-
                 if (phone && searchType !== 'name') {
-                    html += `<div class="actions">
-                        <a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a>
-                    </div>`;
+                    html += `<div class="actions"><a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a></div>`;
                 }
                 card.innerHTML = html;
                 resDiv.appendChild(card);
             });
         } else {
             resDiv.innerHTML = `<div class="error-msg">⚠️ لا توجد نتائج مطابقة</div>`;
-            addLink.style.display = "block"; // إعادة إظهار الزر إذا لم يتم العثور على نتيجة
         }
     }
 </script>
