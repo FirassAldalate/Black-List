@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    </title>نظام الاستعلام المطور</title>
+    <title>القائمة السوداء</title>
     <style>
         :root {
-            --primary: #007bff;
-            --success: #2ecc71;
+            --primary: #2c3e50;
+            --accent: #e74c3c; /* لون أحمر للقائمة السوداء */
+            --success: #27ae60;
             --whatsapp: #25d366;
-            --danger: #e74c3c;
-            --bg: #f4f7f6;
+            --bg: #fdfdfd;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            background-color: #1a1a1a; /* خلفية غامقة للموقع */
             margin: 0;
             padding: 15px;
             display: flex;
@@ -28,42 +28,65 @@
             background: white;
             padding: 30px;
             border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
         }
 
-        #status { text-align: center; font-size: 13px; margin-bottom: 20px; font-weight: bold; }
+        /* تأثير العنوان الملكي */
+        .main-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .sub-title {
+            text-align: center;
+            font-size: 12px;
+            color: #e74c3c;
+            margin-bottom: 25px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        #status { text-align: center; font-size: 11px; margin-bottom: 15px; }
 
         .search-select {
             width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 2px solid #e1e4e8;
-            margin-bottom: 10px;
-            font-size: 14px;
-            background-color: #f9f9f9;
+            padding: 14px;
+            border-radius: 15px;
+            border: 2px solid #eee;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            background-color: #fff;
+            color: #333;
             outline: none;
         }
 
         .search-area input {
-            width: 100%; padding: 18px; border: 2px solid #e1e4e8; border-radius: 20px;
+            width: 100%; padding: 18px; border: 2px solid #eee; border-radius: 20px;
             font-size: 16px; box-sizing: border-box; outline: none; text-align: center;
+            transition: 0.3s;
         }
+
+        .search-area input:focus { border-color: var(--accent); }
 
         .search-area button {
-            width: 100%; background: var(--primary); color: white; border: none;
+            width: 100%; background: #000; color: white; border: none;
             padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
-            margin-top: 15px; cursor: pointer;
+            margin-top: 15px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .error-msg {
-            background: #fff5f5; color: var(--danger); padding: 20px;
-            border-radius: 15px; margin-top: 20px; text-align: center;
-            border: 1px solid #fed7d7; font-weight: bold;
-        }
+        .search-area button:active { transform: scale(0.97); }
 
         .result-card {
             background: #fff; border-radius: 25px; padding: 25px;
-            margin-top: 25px; border: 1px solid #f0f0f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
 
         .info-row {
@@ -71,7 +94,7 @@
             padding: 15px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse;
         }
 
-        .label { font-weight: bold; color: var(--primary); text-align: left; min-width: 90px; }
+        .label { font-weight: bold; color: var(--accent); text-align: left; min-width: 90px; }
         .value { color: #333; text-align: right; font-weight: 600; direction: ltr; }
 
         .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
@@ -81,25 +104,32 @@
             text-align: center; font-weight: bold;
             display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .call { background: #2ecc71; }
-        .whatsapp { background: #25d366; }
+        .call { background: #000; }
+        .whatsapp { background: var(--whatsapp); }
+
+        .error-msg {
+            background: #fff5f5; color: var(--accent); padding: 20px;
+            border-radius: 15px; margin-top: 20px; text-align: center;
+            border: 1px solid #fed7d7; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status" style="color: #666;">🔄 جاري مزامنة البيانات...</div>
+    <div class="main-title">القائمة السوداء</div>
+    <div class="sub-title">BLACK LIST DATABASE</div>
+    <div id="status" style="color: #999;">🔄 جاري فحص السيرفر...</div>
     
     <div class="search-area">
-        <label style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #555;">اختر طريقة البحث:</label>
         <select id="searchType" class="search-select">
-            <option value="imei">البحث عن طريق IMEI (مطابق)</option>
-            <option value="serial">البحث عن طريق Serial Number (مطابق)</option>
-            <option value="name">البحث عن طريق اسم الهاتف (مرن)</option>
+            <option value="imei">البحث عن طريق IMEI</option>
+            <option value="serial">البحث عن طريق Serial Number</option>
+            <option value="name">البحث عن طريق اسم الهاتف</option>
         </select>
         
-        <input type="text" id="q" placeholder="أدخل البيانات هنا...">
-        <button onclick="doSearch()">تـحـقـق الآن</button>
+        <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
+        <button onclick="doSearch()">كشف البيانات</button>
     </div>
 
     <div id="results"></div>
@@ -113,10 +143,10 @@
         database = csv.split('\n').filter(row => row.trim() !== '').map(row => 
             row.split(',').map(cell => cell.replace(/"/g, '').trim())
         );
-        document.getElementById('status').innerHTML = "🟢 النظام جاهز";
-        document.getElementById('status').style.color = "#2ecc71";
+        document.getElementById('status').innerHTML = "🟢 النظام متصل";
+        document.getElementById('status').style.color = "#27ae60";
     }).catch(() => {
-        document.getElementById('status').innerHTML = "🔴 فشل الاتصال";
+        document.getElementById('status').innerHTML = "🔴 فشل الاتصال بالسيرفر";
     });
 
     function doSearch() {
@@ -160,12 +190,9 @@
                         const label = headers[idx] || "بيان";
                         let displayValue = cell;
 
-                        // إذا كان العمود رقم هاتف وكان البحث بالاسم، نقوم بإخفاء القيمة
                         if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
                             phone = cell;
-                            if (searchType === 'name') {
-                                displayValue = "⚠️ مخفي للخصوصية";
-                            }
+                            if (searchType === 'name') displayValue = "⚠️ مخفي للخصوصية";
                         }
                         
                         html += `
@@ -176,21 +203,18 @@
                     }
                 });
 
-                // تظهر الأزرار فقط في بحث IMEI و Serial
                 if (phone && searchType !== 'name') {
                     html += `
                         <div class="actions">
-                            <a href="tel:${phone}" class="btn-act call">📞 اتصال مباشر</a>
+                            <a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a>
                             <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة واتساب</a>
                         </div>`;
                 }
-                
                 card.innerHTML = html;
                 resDiv.appendChild(card);
             });
         } else {
-            const errorText = searchType === 'name' ? "⚠️ لا توجد نتائج بهذا الاسم" : "⚠️ هذا الرقم غير موجود في البيانات";
-            resDiv.innerHTML = `<div class="error-msg">${errorText}</div>`;
+            resDiv.innerHTML = `<div class="error-msg">⚠️ لا توجد نتائج مطابقة في القائمة السوداء</div>`;
         }
     }
 </script>
