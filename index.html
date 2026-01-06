@@ -3,119 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>القائمة السوداء - الإصدار المطور</title>
+    <title>القائمة السوداء</title>
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --success: #27ae60;
-            --bg: #1a1a1a;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
-        }
-
-        .main-title { text-align: center; font-size: 28px; font-weight: 900; color: #000; margin-bottom: 5px; }
-        .sub-title { text-align: center; font-size: 11px; color: var(--accent); margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
-
-        #status-container { margin-bottom: 20px; text-align: center; }
-        #status-text { font-size: 12px; margin-bottom: 8px; font-weight: bold; color: #888; display: block; }
-
-        .progress-bar { width: 100%; height: 4px; background-color: #eee; border-radius: 10px; overflow: hidden; position: relative; }
-        .progress-line { width: 40%; height: 100%; background-color: var(--accent); position: absolute; left: -40%; border-radius: 10px; animation: loading 1.5s infinite linear; }
-
-        @keyframes loading { 0% { left: -40%; } 100% { left: 100%; } }
-
-        .search-select, .search-area input {
-            width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee;
-            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box; text-align: center;
-        }
-
-        .search-area button {
-            width: 100%; background: #000; color: white; border: none;
-            padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
-            margin-top: 5px; cursor: pointer;
-        }
-
-        .add-report-link {
-            display: block; text-align: center; margin-top: 15px; color: var(--accent);
-            text-decoration: none; font-weight: bold; font-size: 14px; padding: 10px;
-            border: 1px dashed var(--accent); border-radius: 15px;
-        }
-
-        #instructions {
-            background-color: #f8f9fa; border-right: 4px solid #000;
-            padding: 15px; border-radius: 12px; margin-top: 20px;
-            font-size: 13px; color: #444; line-height: 1.6;
-        }
-
-        .result-card {
-            background: #fff; border-radius: 25px; padding: 25px;
-            margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            animation: slideUp 0.4s ease;
-        }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse; }
-        .label { font-weight: bold; color: var(--accent); min-width: 110px; text-align: left; font-size: 13px; }
-        .value { color: #333; font-weight: 600; direction: ltr; text-align: right; font-size: 14px; }
-
-        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .btn-act { text-decoration: none; color: white !important; padding: 16px; border-radius: 18px; font-size: 15px; text-align: center; font-weight: bold; }
-        .call { background: #000; }
-        
+        :root { --accent: #e74c3c; --bg: #1a1a1a; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+        .main-title { text-align: center; font-size: 26px; font-weight: 900; margin-bottom: 5px; }
+        .sub-title { text-align: center; font-size: 11px; color: var(--accent); margin-bottom: 20px; font-weight: bold; }
+        #status-text { font-size: 12px; text-align: center; display: block; margin-bottom: 10px; color: #888; }
+        .search-area select, .search-area input { width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee; margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box; text-align: center; }
+        .search-area button { width: 100%; background: #000; color: white; border: none; padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .result-card { background: #fff; border-radius: 25px; padding: 20px; margin-top: 25px; border-left: 8px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.05); animation: slideUp 0.4s ease; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse; }
+        .label { font-weight: bold; color: var(--accent); font-size: 13px; min-width: 100px; text-align: left; }
+        .value { color: #333; font-weight: 600; direction: ltr; text-align: right; }
         .error-msg { background: #fff5f5; color: var(--accent); padding: 20px; border-radius: 15px; margin-top: 20px; text-align: center; font-weight: bold; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; } }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="main-title">القائمة السوداء</div>
     <div class="sub-title">BLACK LIST DATABASE</div>
-    
-    <div id="status-container">
-        <span id="status-text">🔄 جاري الاتصال بالسيرفر...</span>
-        <div id="loader" class="progress-bar"><div class="progress-line"></div></div>
-    </div>
-    
+    <span id="status-text">🔄 جاري الاتصال بالسيرفر...</span>
     <div class="search-area">
-        <select id="searchType" class="search-select">
+        <select id="searchType">
             <option value="imei">البحث عن طريق IMEI</option>
             <option value="serial">البحث عن طريق السيريال</option>
-            <option value="name">البحث عن طريق اسم الهاتف / الشركة</option>
+            <option value="name">البحث عن طريق الشركة / الموديل</option>
         </select>
         <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
         <button onclick="doSearch()">البحث في القائمة</button>
-        <a href="add.html" class="add-report-link">➕ هل تريد إضافة بلاغ جديد؟</a>
+        <a href="add.html" style="display:block; text-align:center; margin-top:15px; color:var(--accent); text-decoration:none; font-weight:bold; font-size:14px;">➕ إضافة بلاغ جديد</a>
     </div>
-
-    <div id="instructions">
-        <b>💡 تعليمات الاستخدام:</b>
-        • للحصول على <b>IMEI</b> أو <b>السيريال</b>: اطلب الكود <span dir="ltr">*#06#</span><br>
-         <b>تنبيه:</b> تأكد من كتابة الأرقام بدقة باللغة الإنجليزية.
-    </div>
-
     <div id="results"></div>
 </div>
 
 <script>
-    // الرابط المباشر لورقة Sheet 1
+    // الرابط لورقة Sheet 1
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=0&single=true&output=csv';
     let database = [];
 
@@ -126,76 +51,48 @@
             database = data.split('\n').filter(row => row.trim() !== '').map(row => 
                 row.split(',').map(cell => cell.replace(/^"(.*)"$/, '$1').trim())
             );
-            document.getElementById('loader').style.display = "none";
             document.getElementById('status-text').innerHTML = "🟢 السيرفر جاهز";
             document.getElementById('status-text').style.color = "#27ae60";
-        } catch (error) {
-            document.getElementById('status-text').innerHTML = "🔴 فشل الاتصال بالسيرفر";
-        }
+        } catch (e) { document.getElementById('status-text').innerHTML = "🔴 خطأ في الاتصال"; }
     }
-
     loadData();
 
     function doSearch() {
         const query = document.getElementById('q').value.trim().toLowerCase();
         const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
-        
         if (database.length === 0 || !query) return;
-
         resDiv.innerHTML = "";
-        document.getElementById('instructions').style.display = "none";
 
-        // ترتيب الأعمدة في الشيت: [0]الشركة، [1]الموديل، [2]اللون، [3]IMEI، [4]السيريال، [5]رقم المالك
-        let foundResults = [];
+        const labels = ["الشركة", "الموديل", "اللون", "IMEI", "السيريال", "رقم المالك"];
+        let found = [];
 
         for (let i = 1; i < database.length; i++) {
             const row = database[i];
             let isMatch = false;
-
-            if (searchType === 'imei') {
-                if (row[3] && row[3].toLowerCase() === query) isMatch = true;
-            } 
-            else if (searchType === 'serial') {
-                if (row[4] && row[4].toLowerCase() === query) isMatch = true;
-            }
+            // حسب الشيت الجديد: B=1(الشركة), C=2(الموديل), E=4(IMEI), F=5(السيريال), G=6(المالك)
+            if (searchType === 'imei' && row[4] && row[4].toLowerCase() === query) isMatch = true;
+            else if (searchType === 'serial' && row[5] && row[5].toLowerCase() === query) isMatch = true;
             else if (searchType === 'name') {
-                // يبحث في الشركة (0) والموديل (1)
-                const combinedInfo = (row[0] + " " + row[1]).toLowerCase();
-                if (combinedInfo.includes(query)) isMatch = true;
+                const info = (row[1] + " " + row[2]).toLowerCase();
+                if (info.includes(query)) isMatch = true;
             }
-
-            if (isMatch) foundResults.push(row);
+            if (isMatch) found.push(row);
         }
 
-        if (foundResults.length > 0) {
-            const labels = ["الشركة المصنعة", "موديل الهاتف", "اللون", "رقم IMEI", "السيريال", "رقم المالك"];
-            
-            foundResults.forEach(foundRow => {
+        if (found.length > 0) {
+            found.forEach(row => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 let html = "";
-                
-                foundRow.forEach((cell, idx) => {
-                    if (idx < labels.length) {
-                        let val = cell || "---";
-                        // إخفاء رقم الهاتف في بحث الأسماء
-                        if (idx === 5 && searchType === 'name') val = "⚠️ مخفي";
-                        html += `<div class="info-row"><span class="label">${labels[idx]}</span><span class="value">${val}</span></div>`;
-                    }
-                });
-
-                // زر الاتصال برقم المالك (العمود رقم 5)
-                if (foundRow[5] && searchType !== 'name') {
-                    html += `<div class="actions"><a href="tel:${foundRow[5]}" class="btn-act call">📞 اتصال بالمالك</a></div>`;
+                // نعرض من العمود 1 إلى 6 (نتجاهل التاريخ في العمود 0)
+                for(let j=1; j<=6; j++) {
+                    let val = row[j] || "---";
+                    if (j === 6 && searchType === 'name') val = "⚠️ مخفي للخصوصية";
+                    html += `<div class="info-row"><span class="label">${labels[j-1]}</span><span class="value">${val}</span></div>`;
+                }
+                if (row[6] && searchType !== 'name') {
+                    html += `<div style="margin-top:15px;"><a href="tel:${row[6]}" style="display:block; background:#000; color:#fff; text-decoration:none; padding:12px; border-radius:15px; text-align:center; font-weight:bold;">📞 اتصال بالمالك</a></div>`;
                 }
                 card.innerHTML = html;
-                resDiv.appendChild(card);
-            });
-        } else {
-            resDiv.innerHTML = `<div class="error-msg">⚠️ لا توجد نتائج مطابقة</div>`;
-        }
-    }
-</script>
-</body>
-</html>
+                res
