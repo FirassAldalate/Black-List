@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام التحقق الذكي</title>
+    </title>نظام الاستعلام المطور</title>
     <style>
         :root {
             --primary: #007bff;
@@ -33,34 +33,34 @@
 
         #status { text-align: center; font-size: 13px; margin-bottom: 20px; font-weight: bold; }
 
+        .search-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #e1e4e8;
+            margin-bottom: 10px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            outline: none;
+        }
+
         .search-area input {
             width: 100%; padding: 18px; border: 2px solid #e1e4e8; border-radius: 20px;
             font-size: 16px; box-sizing: border-box; outline: none; text-align: center;
-            transition: 0.3s;
         }
-
-        .search-area input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,123,255,0.1); }
 
         .search-area button {
             width: 100%; background: var(--primary); color: white; border: none;
             padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold;
-            margin-top: 15px; cursor: pointer; transition: 0.3s;
+            margin-top: 15px; cursor: pointer;
         }
 
-        /* رسالة الخطأ */
         .error-msg {
             background: #fff5f5; color: var(--danger); padding: 20px;
             border-radius: 15px; margin-top: 20px; text-align: center;
-            border: 1px solid #fed7d7; font-weight: bold; animation: shake 0.4s ease;
+            border: 1px solid #fed7d7; font-weight: bold;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* كرت النتيجة */
         .result-card {
             background: #fff; border-radius: 25px; padding: 25px;
             margin-top: 25px; border: 1px solid #f0f0f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
@@ -74,35 +74,34 @@
         .label { font-weight: bold; color: var(--primary); text-align: left; min-width: 90px; }
         .value { color: #333; text-align: right; font-weight: 600; direction: ltr; }
 
-        /* الألوان الذكية للقيم */
-        .clr-gold { color: #D4AF37 !important; }
-        .clr-silver { color: #95a5a6 !important; }
-
-        /* أزرار التواصل العصرية */
         .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        
         .btn-act {
             text-decoration: none; color: white !important;
             padding: 16px; border-radius: 18px; font-size: 15px;
             text-align: center; font-weight: bold;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.3s;
         }
-
-        .call { background: #2ecc71; box-shadow: 0 4px 14px rgba(46, 204, 113, 0.3); }
-        .whatsapp { background: #25d366; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3); }
-        
-        .btn-act:hover { transform: translateY(-2px); opacity: 0.9; }
+        .call { background: #2ecc71; }
+        .whatsapp { background: #25d366; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="status" style="color: #666;">🔄 جاري مزامنة البيانات...</div>
+    
     <div class="search-area">
-        <input type="text" id="q" placeholder="أدخل رقم IMEI بالكامل...">
+        <label style="display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #555;">اختر طريقة البحث:</label>
+        <select id="searchType" class="search-select">
+            <option value="imei">البحث عن طريق IMEI (مطابق)</option>
+            <option value="serial">البحث عن طريق Serial Number (مطابق)</option>
+            <option value="name">البحث عن طريق اسم الهاتف (مرن)</option>
+        </select>
+        
+        <input type="text" id="q" placeholder="أدخل البيانات هنا...">
         <button onclick="doSearch()">تـحـقـق الآن</button>
     </div>
+
     <div id="results"></div>
 </div>
 
@@ -120,61 +119,78 @@
         document.getElementById('status').innerHTML = "🔴 فشل الاتصال";
     });
 
-    function applyColor(text) {
-        const val = text.toLowerCase();
-        if (val.includes('gold') || val.includes('ذهبي')) return 'clr-gold';
-        if (val.includes('silver') || val.includes('فضي')) return 'clr-silver';
-        return '';
-    }
-
     function doSearch() {
         const query = document.getElementById('q').value.trim();
+        const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
         resDiv.innerHTML = "";
         
         if (!query) return;
 
         const headers = database[0];
-        let foundRow = null;
+        let foundResults = [];
 
-        // البحث الصارم عن IMEI مطابق تماماً
         for (let i = 1; i < database.length; i++) {
             const row = database[i];
-            const isMatch = row.some((cell, idx) => 
-                headers[idx].toLowerCase().includes('imei') && cell === query
-            );
-            if (isMatch) { foundRow = row; break; }
-        }
+            let isMatch = false;
 
-        if (foundRow) {
-            const card = document.createElement('div');
-            card.className = 'result-card';
-            let html = ""; let phone = "";
-
-            foundRow.forEach((cell, idx) => {
-                if (cell) {
-                    const label = headers[idx] || "بيان";
-                    if (label.toLowerCase().includes('phone')) phone = cell;
-                    html += `
-                        <div class="info-row">
-                            <span class="label">${label}</span>
-                            <span class="value ${applyColor(cell)}">${cell}</span>
-                        </div>`;
+            row.forEach((cell, idx) => {
+                const headerName = headers[idx].toLowerCase();
+                if (searchType === 'imei' && headerName.includes('imei')) {
+                    if (cell === query) isMatch = true;
+                } 
+                else if (searchType === 'serial' && (headerName.includes('serial') || headerName.includes('سيريال'))) {
+                    if (cell === query) isMatch = true;
+                }
+                else if (searchType === 'name' && (headerName.includes('name') || headerName.includes('اسم') || headerName.includes('device'))) {
+                    if (cell.toLowerCase().includes(query.toLowerCase())) isMatch = true;
                 }
             });
+            if (isMatch) foundResults.push(row);
+        }
 
-            if (phone) {
-                html += `
-                    <div class="actions">
-                        <a href="tel:${phone}" class="btn-act call">📞 اتصال مباشر بالعميل</a>
-                        <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة واتساب</a>
-                    </div>`;
-            }
-            card.innerHTML = html;
-            resDiv.appendChild(card);
+        if (foundResults.length > 0) {
+            foundResults.forEach(foundRow => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                let html = ""; let phone = "";
+
+                foundRow.forEach((cell, idx) => {
+                    if (cell) {
+                        const label = headers[idx] || "بيان";
+                        let displayValue = cell;
+
+                        // إذا كان العمود رقم هاتف وكان البحث بالاسم، نقوم بإخفاء القيمة
+                        if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
+                            phone = cell;
+                            if (searchType === 'name') {
+                                displayValue = "⚠️ مخفي للخصوصية";
+                            }
+                        }
+                        
+                        html += `
+                            <div class="info-row">
+                                <span class="label">${label}</span>
+                                <span class="value">${displayValue}</span>
+                            </div>`;
+                    }
+                });
+
+                // تظهر الأزرار فقط في بحث IMEI و Serial
+                if (phone && searchType !== 'name') {
+                    html += `
+                        <div class="actions">
+                            <a href="tel:${phone}" class="btn-act call">📞 اتصال مباشر</a>
+                            <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة واتساب</a>
+                        </div>`;
+                }
+                
+                card.innerHTML = html;
+                resDiv.appendChild(card);
+            });
         } else {
-            // رسالة الخطأ التي طلبتها
-            resDiv.innerHTML = `<div class="error-msg">⚠️ هذا الايمي غير موجود في البيانات</div>`;
+            const errorText = searchType === 'name' ? "⚠️ لا توجد نتائج بهذا الاسم" : "⚠️ هذا الرقم غير موجود في البيانات";
+            resDiv.innerHTML = `<div class="error-msg">${errorText}</div>`;
         }
     }
 </script>
