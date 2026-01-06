@@ -30,82 +30,59 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
-        #status {
-            text-align: center;
-            font-size: 13px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
+        #status { text-align: center; font-size: 13px; margin-bottom: 15px; font-weight: bold; }
 
         .search-area input {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid #eee;
-            border-radius: 15px;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-            text-align: center;
+            width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 15px;
+            font-size: 16px; box-sizing: border-box; outline: none; text-align: center;
         }
 
         .search-area button {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
+            width: 100%; background: var(--primary); color: white; border: none;
+            padding: 16px; border-radius: 15px; font-size: 18px; font-weight: bold;
+            margin-top: 10px; cursor: pointer;
         }
 
         .result-card {
-            background: #fff;
-            border-radius: 18px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #f0f0f0;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            background: #fff; border-radius: 18px; padding: 20px;
+            margin-top: 20px; border: 1px solid #f0f0f0; box-shadow: 0 8px 20px rgba(0,0,0,0.05);
         }
 
         .info-row {
             display: flex;
-            justify-content: space-between; /* يوزع العنوان يمين والقيمة يسار */
+            justify-content: space-between; /* توزيع العناصر */
             padding: 12px 0;
             border-bottom: 1px solid #f9f9f9;
+            flex-direction: row-reverse; /* عكس الاتجاه لجعل العنوان يسار والقيمة يمين */
         }
 
         .label {
             font-weight: bold;
-            color: var(--primary);
-            text-align: right;
+            color: #888; /* لون رمادي هادئ للعناوين */
+            text-align: left;
+            min-width: 80px;
         }
 
         .value {
             color: #333;
-            text-align: left;
-            direction: ltr; /* لضمان ظهور الـ IMEI والأرقام بشكل صحيح */
+            text-align: right;
+            font-weight: 600;
+            direction: ltr;
         }
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        /* تنسيق الألوان الذكية */
+        .color-gold { color: #D4AF37 !important; text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1); }
+        .color-silver { color: #C0C0C0 !important; }
+        .color-black { color: #000000 !important; }
+        .color-blue { color: #0000FF !important; }
+        .color-red { color: #FF0000 !important; }
 
+        .actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn-act {
-            flex: 1;
-            text-decoration: none;
-            color: white !important;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            text-align: center;
-            font-weight: bold;
+            flex: 1; text-decoration: none; color: white !important;
+            padding: 12px; border-radius: 12px; font-size: 14px;
+            text-align: center; font-weight: bold;
         }
-
         .call { background: var(--success); }
         .whatsapp { background: var(--whatsapp); }
     </style>
@@ -114,12 +91,10 @@
 
 <div class="container">
     <div id="status" style="color: #666;">🔄 جاري تحميل البيانات...</div>
-    
     <div class="search-area">
-        <input type="text" id="q" placeholder="أدخل IMEI أو الاسم للبحث...">
+        <input type="text" id="q" placeholder="أدخل IMEI أو الاسم...">
         <button onclick="doSearch()">بـحـث</button>
     </div>
-
     <div id="results"></div>
 </div>
 
@@ -127,71 +102,67 @@
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
     let database = [];
 
-    // جلب البيانات
-    fetch(url)
-        .then(res => res.text())
-        .then(csv => {
-            // تحويل النص إلى مصفوفة وتجنب الصفوف الفارغة
-            database = csv.split('\n').filter(row => row.trim() !== '').map(row => 
-                row.split(',').map(cell => cell.replace(/"/g, '').trim())
-            );
-            document.getElementById('status').innerHTML = "🟢 البيانات جاهزة";
-            document.getElementById('status').style.color = "#28a745";
-        })
-        .catch(err => {
-            document.getElementById('status').innerHTML = "🔴 فشل في المزامنة";
-            document.getElementById('status').style.color = "#dc3545";
-        });
+    fetch(url).then(res => res.text()).then(csv => {
+        database = csv.split('\n').filter(row => row.trim() !== '').map(row => 
+            row.split(',').map(cell => cell.replace(/"/g, '').trim())
+        );
+        document.getElementById('status').innerHTML = "🟢 البيانات جاهزة";
+        document.getElementById('status').style.color = "#28a745";
+    }).catch(() => {
+        document.getElementById('status').innerHTML = "🔴 فشل المزامنة";
+    });
+
+    function getColorClass(text) {
+        const val = text.toLowerCase();
+        if (val.includes('gold') || val.includes('ذهبي')) return 'color-gold';
+        if (val.includes('silver') || val.includes('فضي')) return 'color-silver';
+        if (val.includes('black') || val.includes('أسود')) return 'color-black';
+        if (val.includes('blue') || val.includes('أزرق')) return 'color-blue';
+        if (val.includes('red') || val.includes('أحمر')) return 'color-red';
+        return '';
+    }
 
     function doSearch() {
         const query = document.getElementById('q').value.trim().toLowerCase();
         const resDiv = document.getElementById('results');
         resDiv.innerHTML = "";
-        
         if (!query || database.length === 0) return;
 
         const headers = database[0];
-        let found = false;
-
         for (let i = 1; i < database.length; i++) {
             const row = database[i];
             if (row.join(" ").toLowerCase().includes(query)) {
-                found = true;
                 const card = document.createElement('div');
                 card.className = 'result-card';
-                
-                let html = "";
-                let phone = "";
+                let html = ""; let phone = "";
 
                 row.forEach((cell, idx) => {
                     if (cell) {
                         const label = headers[idx] || "بيان";
-                        // حفظ رقم الهاتف للأزرار
                         if (label.toLowerCase().includes('phone')) phone = cell;
+                        
+                        // تطبيق اللون الذكي إذا كان الحقل يخص اللون أو اسم الجهاز
+                        const colorClass = (label.toLowerCase().includes('color') || label.toLowerCase().includes('اللون')) ? getColorClass(cell) : '';
                         
                         html += `
                             <div class="info-row">
                                 <span class="label">${label}</span>
-                                <span class="value">${cell}</span>
+                                <span class="value ${colorClass}">${cell}</span>
                             </div>`;
                     }
                 });
 
                 if (phone) {
-                    html += `
-                        <div class="actions">
-                            <a href="tel:${phone}" class="btn-act call">📞 اتصال</a>
-                            <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 واتساب</a>
-                        </div>`;
+                    html += `<div class="actions">
+                        <a href="tel:${phone}" class="btn-act call">📞 اتصال</a>
+                        <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 واتساب</a>
+                    </div>`;
                 }
-
                 card.innerHTML = html;
                 resDiv.appendChild(card);
             }
         }
-        if (!found) resDiv.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>لا توجد نتائج</p>";
     }
 </script>
-
 </body>
 </html>
