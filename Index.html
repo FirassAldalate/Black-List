@@ -2,95 +2,223 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام الاستعلام السريع</title>
     <style>
-        /* التنسيق العام ليناسب بلوغر */
-        .search-container { max-width: 500px; margin: 10px auto; font-family: sans-serif; direction: rtl; }
-        .search-input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .search-btn { width: 100%; background: #007bff; color: white; border: none; padding: 15px; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .res-card { background: #fff; border: 1px solid #eee; padding: 15px; margin-top: 15px; border-radius: 10px; border-right: 5px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .res-line { margin-bottom: 8px; font-size: 15px; color: #333; }
-        .res-label { font-weight: bold; color: #007bff; margin-left: 5px; }
-        
-        /* تنسيق زر الاتصال */
-        .call-btn {
-            display: inline-flex;
-            align-items: center;
-            background-color: #28a745;
-            color: white !important;
-            padding: 5px 15px;
-            border-radius: 50px;
-            text-decoration: none !important;
-            font-weight: bold;
-            margin-top: 5px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --whatsapp-color: #25d366;
+            --bg-color: #f4f7f9;
         }
-        .call-btn:hover { background-color: #218838; }
-        #status-msg { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-card {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            color: #333;
+            margin: 0;
+        }
+
+        #status-badge {
+            display: inline-block;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            background: #eee;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e1e4e8;
+            border-radius: 14px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .result-card {
+            background: #fff;
+            border: 1px solid #edf0f2;
+            border-right: 6px solid var(--primary-color);
+            padding: 18px;
+            margin-top: 20px;
+            border-radius: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .info-row {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+
+        .info-label { font-weight: bold; color: var(--primary-color); }
+        .info-value { color: #444; }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            flex: 1;
+            text-decoration: none;
+            color: white !important;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-call { background: var(--success-color); }
+        .btn-wa { background: var(--whatsapp-color); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-<div class="search-container">
-    <div id="status-msg">جاري تحميل قاعدة البيانات...</div>
-    <input type="text" id="userInput" placeholder="ابحث عن IMEI أو نوع الجهاز...">
-    <button class="search-btn" onclick="startSearch()">بـحـث</button>
-    <div id="resultsArea"></div>
+<div class="app-card">
+    <div class="header">
+        <h1>📱 قاعدة بيانات الأجهزة</h1>
+        <div id="status-badge">جاري الاتصال بالسيرفر...</div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="ابحث عن IMEI أو اسم أو رقم...">
+        <button onclick="executeSearch()">بـحـث الآن</button>
+    </div>
+
+    <div id="resultsWrapper"></div>
 </div>
 
 <script>
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
-    let localData = [];
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
+    let rawData = [];
 
-    // جلب البيانات
-    fetch(sheetUrl)
+    // جلب البيانات فور تحميل الصفحة
+    fetch(csvUrl)
         .then(res => res.text())
-        .then(csv => {
-            localData = csv.split('\n').map(r => r.split(',').map(c => c.replace(/"/g, '').trim()));
-            document.getElementById('status-msg').innerText = "✅ البيانات محدثة وجاهزة";
+        .then(data => {
+            rawData = data.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '').trim()));
+            document.getElementById('status-badge').innerHTML = "🟢 متصل والبيانات محدثة";
+            document.getElementById('status-badge').style.background = "#e6f4ea";
+            document.getElementById('status-badge').style.color = "#1e7e34";
         })
-        .catch(err => {
-            document.getElementById('status-msg').innerText = "❌ فشل الاتصال بالبيانات";
+        .catch(() => {
+            document.getElementById('status-badge').innerHTML = "🔴 خطأ في المزامنة";
+            document.getElementById('status-badge').style.background = "#fce8e6";
+            document.getElementById('status-badge').style.color = "#d93025";
         });
 
-    function startSearch() {
-        const query = document.getElementById('userInput').value.trim().toLowerCase();
-        const area = document.getElementById('resultsArea');
-        area.innerHTML = "";
+    function executeSearch() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const wrapper = document.getElementById('resultsWrapper');
+        wrapper.innerHTML = "";
         
         if (!query) return;
 
-        const headers = localData[0];
-        let foundAny = false;
+        const headers = rawData[0];
+        let hasResults = false;
 
-        for (let i = 1; i < localData.length; i++) {
-            const row = localData[i];
+        for (let i = 1; i < rawData.length; i++) {
+            const row = rawData[i];
             if (row.join(" ").toLowerCase().includes(query)) {
-                foundAny = true;
+                hasResults = true;
                 const card = document.createElement('div');
-                card.className = 'res-card';
+                card.className = 'result-card';
                 
-                let htmlContent = "";
+                let rowsHtml = "";
+                let phoneNum = "";
+
                 row.forEach((cell, idx) => {
-                    if(cell) {
-                        let label = headers[idx] || "معلومة";
-                        let val = cell;
-
-                        // إذا كان العمود هو الهاتف، نحوله لزر اتصال
-                        if (label.toLowerCase().includes('phone')) {
-                            val = `<a href="tel:${cell}" class="call-btn">📞 إضغط للاتصال: ${cell}</a>`;
-                        }
-
-                        htmlContent += `<div class="res-line"><span class="res-label">${label}:</span> ${val}</div>`;
+                    if (cell) {
+                        const label = headers[idx] || "بيان";
+                        if (label.toLowerCase().includes('phone')) phoneNum = cell;
+                        
+                        rowsHtml += `<div class="info-row">
+                                        <span class="info-label">${label}</span>
+                                        <span class="info-value">${cell}</span>
+                                     </div>`;
                     }
                 });
-                card.innerHTML = htmlContent;
-                area.appendChild(card);
+
+                if (phoneNum) {
+                    rowsHtml += `
+                        <div class="action-buttons">
+                            <a href="tel:${phoneNum}" class="btn-action btn-call">📞 اتصال</a>
+                            <a href="https://wa.me/${phoneNum.replace(/\D/g,'')}" target="_blank" class="btn-action btn-wa">💬 واتساب</a>
+                        </div>`;
+                }
+
+                card.innerHTML = rowsHtml;
+                wrapper.appendChild(card);
             }
         }
-
-        if (!foundAny) area.innerHTML = "<p style='text-align:center; color: #999;'>لا يوجد نتائج مطابقة</p>";
+        if (!hasResults) wrapper.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>عذراً، لا توجد نتائج مطابقة</p>";
     }
 </script>
 
