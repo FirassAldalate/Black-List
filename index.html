@@ -3,37 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الاستعلام السريع</title>
+    <title>نظام البحث الذكي</title>
     <style>
         :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --whatsapp-color: #25d366;
-            --bg-color: #f4f7f9;
+            --primary: #007bff;
+            --success: #28a745;
+            --whatsapp: #25d366;
+            --bg: #f8f9fa;
+            --text-main: #2d3436;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
 
-        .app-card {
+        .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 450px;
             background: white;
             padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
-        .header {
+        /* حالة الاتصال */
+        #status {
             text-align: center;
+            font-size: 12px;
+            margin-bottom: 15px;
+            padding: 5px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        /* صندوق البحث */
+        .search-area {
+            position: relative;
             margin-bottom: 25px;
         }
+
+        input {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #eee;
+            border-radius: 18px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+            background: #fdfdfd;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.1);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            transition: 0.2s;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        /* كرت النتيجة */
+        .result-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between; /* يوزع العنوان يمين والقيمة يسار */
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .label {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .value {
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: 500;
+            direction: ltr; /* لجعل الـ IMEI والأرقام تظهر بشكل صحيح من اليسار لليمين */
+        }
+
+        /* أزرار التواصل */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-act {
+            flex: 1;
+            text-decoration: none;
+            color: white !important;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .call { background: var(--success); }
+        .whatsapp { background: var(--whatsapp); }
+        
+        .btn-act:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="status">جاري مزامنة البيانات...</div>
+    
+    <div class="search-area">
+        <input type="text" id="q" placeholder="IMEI، اسم الجهاز، أو رقم الهاتف">
+        <button onclick="doSearch()">🔍 ابـحـث الآن</button>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<script>
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
+    let data = [];
+
+    fetch(url)
+        .then(res => res.text())
+        .then(csv => {
+            data = csv.split('\n').map(row => row.split(',').map(c => c.replace(/"/g, '').trim()));
+            document.getElementById
 
         .header h1 {
             font-size: 22px;
