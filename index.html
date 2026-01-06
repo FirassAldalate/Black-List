@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام التحقق من الأجهزة</title>
+    <title>نظام التحقق الذكي</title>
     <style>
         :root {
             --primary: #007bff;
             --success: #2ecc71;
             --whatsapp: #25d366;
-            --bg: #f0f2f5;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
@@ -27,7 +28,7 @@
             background: white;
             padding: 30px;
             border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
         }
 
         #status { text-align: center; font-size: 13px; margin-bottom: 20px; font-weight: bold; }
@@ -35,10 +36,10 @@
         .search-area input {
             width: 100%; padding: 18px; border: 2px solid #e1e4e8; border-radius: 20px;
             font-size: 16px; box-sizing: border-box; outline: none; text-align: center;
-            transition: 0.3s; background: #fdfdfd;
+            transition: 0.3s;
         }
 
-        .search-area input:focus { border-color: var(--primary); background: #fff; }
+        .search-area input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,123,255,0.1); }
 
         .search-area button {
             width: 100%; background: var(--primary); color: white; border: none;
@@ -46,51 +47,58 @@
             margin-top: 15px; cursor: pointer; transition: 0.3s;
         }
 
+        /* رسالة الخطأ */
+        .error-msg {
+            background: #fff5f5; color: var(--danger); padding: 20px;
+            border-radius: 15px; margin-top: 20px; text-align: center;
+            border: 1px solid #fed7d7; font-weight: bold; animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* كرت النتيجة */
         .result-card {
             background: #fff; border-radius: 25px; padding: 25px;
-            margin-top: 25px; border: 1px solid #eee; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            animation: slideUp 0.4s ease;
+            margin-top: 25px; border: 1px solid #f0f0f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
 
         .info-row {
             display: flex; justify-content: space-between;
-            padding: 15px 0; border-bottom: 1px solid #f5f5f5; flex-direction: row-reverse;
+            padding: 15px 0; border-bottom: 1px solid #f8f9fa; flex-direction: row-reverse;
         }
 
-        .label { font-weight: bold; color: var(--primary); text-align: left; min-width: 100px; }
-        .value { color: #2d3436; text-align: right; font-weight: 600; direction: ltr; }
+        .label { font-weight: bold; color: var(--primary); text-align: left; min-width: 90px; }
+        .value { color: #333; text-align: right; font-weight: 600; direction: ltr; }
 
-        /* ألوان القيم الذكية */
-        .clr-gold { color: #d4af37 !important; }
+        /* الألوان الذكية للقيم */
+        .clr-gold { color: #D4AF37 !important; }
         .clr-silver { color: #95a5a6 !important; }
-        .clr-black { color: #2d3436 !important; }
 
-        /* أزرار التواصل الحديثة */
-        .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; }
+        /* أزرار التواصل العصرية */
+        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         
         .btn-act {
             text-decoration: none; color: white !important;
-            padding: 15px; border-radius: 15px; font-size: 16px;
+            padding: 16px; border-radius: 18px; font-size: 15px;
             text-align: center; font-weight: bold;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: 0.3s;
         }
 
-        .call { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-        .whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
+        .call { background: #2ecc71; box-shadow: 0 4px 14px rgba(46, 204, 113, 0.3); }
+        .whatsapp { background: #25d366; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3); }
         
-        .btn-act:active { transform: scale(0.96); }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .btn-act:hover { transform: translateY(-2px); opacity: 0.9; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status" style="color: #666;">⏳ جاري المزامنة...</div>
+    <div id="status" style="color: #666;">🔄 جاري مزامنة البيانات...</div>
     <div class="search-area">
         <input type="text" id="q" placeholder="أدخل رقم IMEI بالكامل...">
         <button onclick="doSearch()">تـحـقـق الآن</button>
@@ -106,17 +114,16 @@
         database = csv.split('\n').filter(row => row.trim() !== '').map(row => 
             row.split(',').map(cell => cell.replace(/"/g, '').trim())
         );
-        document.getElementById('status').innerHTML = "✅ النظام جاهز للاستخدام";
+        document.getElementById('status').innerHTML = "🟢 النظام جاهز";
         document.getElementById('status').style.color = "#2ecc71";
     }).catch(() => {
-        document.getElementById('status').innerHTML = "❌ خطأ في الاتصال بالسيرفر";
+        document.getElementById('status').innerHTML = "🔴 فشل الاتصال";
     });
 
-    function applyDynamicColor(text) {
+    function applyColor(text) {
         const val = text.toLowerCase();
         if (val.includes('gold') || val.includes('ذهبي')) return 'clr-gold';
         if (val.includes('silver') || val.includes('فضي')) return 'clr-silver';
-        if (val.includes('black') || val.includes('أسود')) return 'clr-black';
         return '';
     }
 
@@ -128,51 +135,46 @@
         if (!query) return;
 
         const headers = database[0];
-        let found = false;
+        let foundRow = null;
 
-        // البحث الصارم: يجب أن يطابق المدخل خلية IMEI بالكامل
+        // البحث الصارم عن IMEI مطابق تماماً
         for (let i = 1; i < database.length; i++) {
             const row = database[i];
-            
-            // نفترض أن أول عمود أو العمود المسمى IMEI هو المقصود بالبحث الصارم
-            const isMatch = row.some((cell, idx) => {
-                return headers[idx].toLowerCase().includes('imei') && cell === query;
-            });
+            const isMatch = row.some((cell, idx) => 
+                headers[idx].toLowerCase().includes('imei') && cell === query
+            );
+            if (isMatch) { foundRow = row; break; }
+        }
 
-            if (isMatch) {
-                found = true;
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                let html = ""; let phone = "";
+        if (foundRow) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            let html = ""; let phone = "";
 
-                row.forEach((cell, idx) => {
-                    if (cell) {
-                        const label = headers[idx] || "بيان";
-                        if (label.toLowerCase().includes('phone')) phone = cell;
-                        const colorClass = applyDynamicColor(cell);
-                        
-                        html += `
-                            <div class="info-row">
-                                <span class="label">${label}</span>
-                                <span class="value ${colorClass}">${cell}</span>
-                            </div>`;
-                    }
-                });
-
-                if (phone) {
+            foundRow.forEach((cell, idx) => {
+                if (cell) {
+                    const label = headers[idx] || "بيان";
+                    if (label.toLowerCase().includes('phone')) phone = cell;
                     html += `
-                        <div class="actions">
-                            <a href="tel:${phone}" class="btn-act call">📞 اتصال مباشر بالعميل</a>
-                            <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة عبر واتساب</a>
+                        <div class="info-row">
+                            <span class="label">${label}</span>
+                            <span class="value ${applyColor(cell)}">${cell}</span>
                         </div>`;
                 }
-                card.innerHTML = html;
-                resDiv.appendChild(card);
-                break; // توقف عند إيجاد المطابقة الصحيحة
+            });
+
+            if (phone) {
+                html += `
+                    <div class="actions">
+                        <a href="tel:${phone}" class="btn-act call">📞 اتصال مباشر بالعميل</a>
+                        <a href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" class="btn-act whatsapp">💬 مراسلة واتساب</a>
+                    </div>`;
             }
-        }
-        if (!found && query.length > 5) {
-            resDiv.innerHTML = "<p style='text-align:center; color:#e74c3c; font-weight:bold; margin-top:20px;'>⚠️ الرقم المدخل غير صحيح أو غير مسجل</p>";
+            card.innerHTML = html;
+            resDiv.appendChild(card);
+        } else {
+            // رسالة الخطأ التي طلبتها
+            resDiv.innerHTML = `<div class="error-msg">⚠️ هذا الايمي غير موجود في البيانات</div>`;
         }
     }
 </script>
