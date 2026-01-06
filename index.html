@@ -46,7 +46,7 @@
 
         .search-select, .search-area input {
             width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee;
-            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box;
+            margin-bottom: 12px; font-size: 15px; font-weight: bold; outline: none; box-sizing: border-box; text-align: center;
         }
 
         .search-area button {
@@ -56,16 +56,9 @@
         }
 
         .add-report-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 10px;
-            border: 1px dashed var(--accent);
-            border-radius: 15px;
+            display: block; text-align: center; margin-top: 15px; color: var(--accent);
+            text-decoration: none; font-weight: bold; font-size: 14px; padding: 10px;
+            border: 1px dashed var(--accent); border-radius: 15px;
         }
 
         #instructions {
@@ -112,7 +105,7 @@
         </select>
         <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
         <button onclick="doSearch()">البحث في القائمة السوداء</button>
-        <a href="add.html" class="add-report-link" id="addBtn">➕ هل تريد إضافة بلاغ جديد؟ اضغط هنا</a>
+        <a href="add.html" class="add-report-link">➕ هل تريد إضافة بلاغ جديد؟ اضغط هنا</a>
     </div>
 
     <div id="instructions">
@@ -125,16 +118,22 @@
 </div>
 
 <script>
+    // الرابط المحدث لقراءة الورقة الثانية Sheet 1 (غالباً gid=0 أو يتم جلبها تلقائياً)
+    // ملاحظة: تأكد أنك قمت بعمل "نشر للويب" لكامل الملف وليس لورقة واحدة فقط.
     const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?output=csv';
+
     let database = [];
 
     async function loadData() {
         try {
             const response = await fetch(url);
             const data = await response.text();
+            
+            // معالجة البيانات: تقسيمها لصفوف وتنظيفها من علامات الاقتباس
             database = data.split('\n').filter(row => row.trim() !== '').map(row => 
-                row.split(',').map(cell => cell.replace(/"/g, '').trim())
+                row.split(',').map(cell => cell.replace(/^"(.*)"$/, '$1').trim())
             );
+            
             document.getElementById('loader').style.display = "none";
             document.getElementById('status-text').innerHTML = "🟢 السيرفر جاهز";
             document.getElementById('status-text').style.color = "#27ae60";
@@ -150,12 +149,11 @@
         const query = document.getElementById('q').value.trim().toLowerCase();
         const searchType = document.getElementById('searchType').value;
         const resDiv = document.getElementById('results');
-        const insBox = document.getElementById('instructions');
         
         if (database.length === 0 || !query) return;
 
         resDiv.innerHTML = "";
-        insBox.style.display = "none";
+        document.getElementById('instructions').style.display = "none";
 
         const headers = database[0];
         let foundResults = [];
@@ -164,21 +162,20 @@
             const row = database[i];
             let isMatch = false;
 
-            row.forEach((cell, idx) => {
-                const head = headers[idx] ? headers[idx].toLowerCase() : "";
-                const cellValue = cell ? cell.toLowerCase() : "";
+            for (let idx = 0; idx < row.length; idx++) {
+                const head = (headers[idx] || "").toLowerCase();
+                const cellValue = (row[idx] || "").toLowerCase();
 
-                if (searchType === 'imei') {
-                    if (head.includes('imei') && cellValue === query) isMatch = true;
+                if (searchType === 'imei' && head.includes('imei') && cellValue === query) {
+                    isMatch = true; break;
                 } 
-                else if (searchType === 'serial') {
-                    if ((head.includes('serial') || head.includes('سيريال')) && cellValue === query) isMatch = true;
+                if (searchType === 'serial' && (head.includes('serial') || head.includes('سيريال')) && cellValue === query) {
+                    isMatch = true; break;
                 }
-                else if (searchType === 'name') {
-                    const isNameHeader = head.includes('name') || head.includes('اسم') || head.includes('device') || head.includes('type') || head.includes('نوع') || head.includes('جهاز');
-                    if (isNameHeader && cellValue.includes(query)) isMatch = true;
+                if (searchType === 'name' && (head.includes('name') || head.includes('اسم') || head.includes('device')) && cellValue.includes(query)) {
+                    isMatch = true; break;
                 }
-            });
+            }
             if (isMatch) foundResults.push(row);
         }
 
@@ -187,17 +184,17 @@
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 let html = ""; let phone = "";
+
                 foundRow.forEach((cell, idx) => {
-                    if (cell) {
-                        const label = headers[idx] || "بيان";
-                        let val = cell;
-                        if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
-                            phone = cell;
-                            if (searchType === 'name') val = "⚠️ مخفي للخصوصية";
-                        }
-                        html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
+                    const label = headers[idx] || "بيان";
+                    let val = cell || "غير متوفر";
+                    if (label.toLowerCase().includes('phone') || label.toLowerCase().includes('هاتف') || label.toLowerCase().includes('رقم')) {
+                        phone = cell;
+                        if (searchType === 'name') val = "⚠️ مخفي للخصوصية";
                     }
+                    html += `<div class="info-row"><span class="label">${label}</span><span class="value">${val}</span></div>`;
                 });
+
                 if (phone && searchType !== 'name') {
                     html += `<div class="actions"><a href="tel:${phone}" class="btn-act call">📞 اتصال بالمالك</a></div>`;
                 }
