@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة الإدارة - مراجعة البلاغات</title>
     <style>
         :root { --accent: #e74c3c; --bg: #1a1a1a; --success: #27ae60; }
@@ -10,48 +10,80 @@
         .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
         .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .header h1 { font-size: 22px; margin: 0; color: #000; }
+        
         #status { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 15px; color: #666; }
-        .pending-card { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .pending-card { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 5px 15px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease; }
         .info-item { margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px dashed #f0f0f0; padding-bottom: 5px; flex-direction: row-reverse; }
-        .info-item b { color: var(--accent); }
-        .info-item span { color: #333; font-weight: 600; }
+        .info-item b { color: var(--accent); min-width: 80px; text-align: left; }
+        .info-item span { color: #333; font-weight: 600; text-align: right; }
+
         .btn-approve { width: 100%; background: var(--success); color: white; border: none; padding: 15px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .btn-approve:active { transform: scale(0.95); }
-        .btn-approve:disabled { background: #ccc; }
+        .btn-approve:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* ستايل شاشة تسجيل الدخول */
+        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:1000; display:flex; justify-content:center; align-items:center; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+<div id="loginOverlay">
+    <div class="container" style="max-width:320px; text-align:center;">
+        <h2 style="margin-bottom:10px;">دخول الإدارة</h2>
+        <input type="password" id="passInput" placeholder="أدخل كلمة المرور" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px; text-align:center; box-sizing:border-box;">
+        <button onclick="checkLogin()" style="width:100%; background:#000; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold;">دخول</button>
+        <p id="loginError" style="color:red; font-size:12px; margin-top:10px; font-weight:bold;"></p>
+    </div>
+</div>
+
 <div class="container">
-    <div class="header"><h1>مراجعة البلاغات المعلقة</h1></div>
+    <div class="header">
+        <h1>مراجعة البلاغات المعلقة</h1>
+    </div>
+
     <div id="status">🔄 جاري فحص الطلبات...</div>
     <div id="pendingList"></div>
+    
     <a href="index.html" style="display:block; text-align:center; margin-top:20px; color:#888; text-decoration:none; font-size:13px;">⬅️ العودة للرئيسية</a>
 </div>
 
 <script>
-    // الرابط الذي أكدت لك أنه يعمل بنجاح
+    // الإعدادات الروابط الخاصة بك
     const pendingUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
     
-    // استبدل هذا الرابط برابط الـ Web App الخاص بك بعد النشر (الذي ينتهي بـ /exec)
-    const scriptUrl = 'رابط_الويب_آب_الخاص_بك_هنا';
+    // كلمة المرور للدخول لصفحة الإدارة (يمكنك تغييرها)
+    const ADMIN_PASS = "123456"; 
+
+    function checkLogin() {
+        const input = document.getElementById('passInput').value;
+        if (input === ADMIN_PASS) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            loadPending();
+        } else {
+            document.getElementById('loginError').innerText = "❌ كلمة المرور غير صحيحة";
+        }
+    }
 
     async function loadPending() {
         const listDiv = document.getElementById('pendingList');
         const statusDiv = document.getElementById('status');
+        
         try {
-            const response = await fetch(pendingUrl + "&nocache=" + Math.random());
+            const response = await fetch(pendingUrl + "&nocache=" + new Date().getTime());
             const data = await response.text();
-            
-            // تحويل الـ CSV إلى مصفوفة
             const rows = data.split('\n').filter(row => row.trim() !== '').map(row => 
                 row.split(',').map(cell => cell.replace(/^"(.*)"$/, '$1').trim())
             );
 
             listDiv.innerHTML = "";
-            // إذا كان فقط العناوين موجودة
+
             if (rows.length <= 1) {
                 statusDiv.innerHTML = "✅ لا توجد طلبات جديدة حالياً";
-                listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">كل البلاغات تمت مراجعتها ونقلها</div>';
+                listDiv.innerHTML = '<div style="text-align:center; padding:40px; color:#888; font-weight:bold;">قائمة الانتظار فارغة 👍</div>';
                 return;
             }
 
@@ -59,12 +91,14 @@
 
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                if (!row[4]) continue; // تخطي السطور الفارغة
+                if (!row[4]) continue; 
+
                 const card = document.createElement('div');
                 card.className = 'pending-card';
                 card.innerHTML = `
                     <div class="info-item"><b>الشركة:</b> <span>${row[1] || '---'}</span></div>
                     <div class="info-item"><b>الموديل:</b> <span>${row[2] || '---'}</span></div>
+                    <div class="info-item"><b>اللون:</b> <span>${row[3] || '---'}</span></div>
                     <div class="info-item"><b>IMEI:</b> <span>${row[4] || '---'}</span></div>
                     <div class="info-item"><b>المالك:</b> <span>${row[6] || '---'}</span></div>
                     <button class="btn-approve" onclick="approveEntry(${i + 1}, this)">✅ موافقة ونقل الآن</button>
@@ -72,30 +106,33 @@
                 listDiv.appendChild(card);
             }
         } catch (error) {
-            statusDiv.innerHTML = "🔴 خطأ في الاتصال بالشيت";
-            console.error(error);
+            statusDiv.innerHTML = "🔴 خطأ في جلب البيانات من الشيت";
         }
     }
 
     async function approveEntry(rowNumber, btn) {
         if (!confirm("هل أنت متأكد من نقل هذا البلاغ للقائمة الرئيسية؟")) return;
+        
         btn.disabled = true;
         btn.innerText = "جاري النقل...";
+        
         try {
-            // استدعاء الأكشن من السكريبت
+            // إرسال طلب الموافقة للسيرفر
             await fetch(`${scriptUrl}?action=approve&row=${rowNumber}`, { mode: 'no-cors' });
             
-            // تحديث الواجهة بعد ثانية ونصف
+            // إخفاء البطاقة وتحديث القائمة بعد ثانية ونصف
             setTimeout(() => {
-                btn.parentElement.remove();
+                btn.parentElement.style.opacity = '0.5';
+                btn.innerText = "✔️ تم النقل";
                 loadPending();
             }, 1500);
+            
         } catch (error) {
             alert("حدث خطأ في الاتصال بالسيرفر");
             btn.disabled = false;
+            btn.innerText = "✅ موافقة ونقل الآن";
         }
     }
-    loadPending();
 </script>
 </body>
 </html>
