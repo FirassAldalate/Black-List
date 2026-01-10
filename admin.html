@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة - مراجعة البلاغات</title>
+    <style>
+        :root { --accent: #e74c3c; --bg: #1a1a1a; --success: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
+        .container { width: 100%; max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 30px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 22px; margin: 0; }
+        .pending-card { background: #f9f9f9; border-radius: 20px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; position: relative; }
+        .info { font-size: 13px; margin-bottom: 5px; }
+        .info b { color: var(--accent); }
+        .btn-approve { width: 100%; background: var(--success); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-approve:disabled { background: #ccc; }
+        #status { text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>مراجعة الطلبات المعلقة</h1>
+        <p style="font-size: 12px; color: #666;">ورقة Pending</p>
+    </div>
+
+    <div id="status">🔄 جاري تحميل الطلبات...</div>
+    <div id="pendingList"></div>
+</div>
+
+<script>
+    // رابط CSV لورقة Pending فقط
+    const pendingUrl = 'https://docs.google.com/spreadsheets/d/e/YOUR_ID/pub?gid=YOUR_PENDING_GID&single=true&output=csv';
+    const scriptUrl = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
+
+    async function loadPending() {
+        try {
+            const res = await fetch(pendingUrl + "&t=" + new Date().getTime());
+            const text = await res.text();
+            const rows = text.split('\n').slice(1).map(row => row.split(','));
+            
+            const list = document.getElementById('pendingList');
+            const status = document.getElementById('status');
+            list.innerHTML = "";
+
+            if (rows.length === 0 || rows[0].length < 2) {
+                status.innerHTML = "✅ لا توجد طلبات معلقة حالياً";
+                return;
+            }
+
+            status.innerHTML = `يوجد (${rows.length}) طلبات بانتظار المراجعة`;
+
+            rows.forEach((row, index) => {
+                if (!row[4]) return; // تخطي السطور الفارغة
+                const div = document.createElement('div');
+                div.className = 'pending-card';
+                div.innerHTML = `
+                    <div class="info"><b>الجهاز:</b> ${row[1]} ${row[2]}</div>
+                    <div class="info"><b>IMEI:</b> ${row[4]}</div>
+                    <div class="info"><b>المالك:</b> ${row[6]}</div>
+                    <button class="btn-approve" onclick="approveRow(${index + 2}, this)">✅ موافقة ونقل للقائمة</button>
+                `;
+                list.appendChild(div);
+            });
+        } catch (e) {
+            document.getElementById('status').innerHTML = "🔴 فشل جلب البيانات";
+        }
+    }
+
+    async function approveRow(rowNum, btn) {
+        btn.disabled = true;
+        btn.innerText = "جاري النقل...";
+        
+        // استدعاء السكريبت ليضع "نعم" في العمود المطلوب ويقوم بالنقل
+        try {
+            await fetch(`${scriptUrl}?action=approve&row=${rowNum}`);
+            btn.parentElement.style.display = 'none';
+            alert("تم نقل البلاغ بنجاح!");
+        } catch (e) {
+            alert("حدث خطأ أثناء النقل");
+            btn.disabled = false;
+        }
+    }
+
+    loadPending();
+</script>
+</body>
+</html>
