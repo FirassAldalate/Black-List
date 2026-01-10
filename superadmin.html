@@ -2,156 +2,109 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BLACK LIST - السوبر أدمن</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السوبر أدمن - تعديل وحذف</title>
     <style>
-        :root { --danger: #e74c3c; --dark: #1a1a1a; --gray: #f4f4f4; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #000; margin: 0; padding: 0; color: white; }
+        :root { --danger: #e74c3c; --success: #27ae60; --dark: #121212; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: white; margin: 0; padding: 15px; }
         
-        /* شاشة تسجيل الدخول الخاصة بك */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: #fff; padding: 30px; border-radius: 20px; width: 300px; text-align: center; color: #000; }
-        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 10px; text-align: center; font-size: 18px; box-sizing: border-box; }
-        .btn-login { width: 100%; background: #000; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        /* المحتوى الرئيسي */
-        .container { max-width: 500px; margin: 0 auto; padding: 20px; display: none; }
-        .header { text-align: center; padding: 20px 0; }
-        .header h1 { font-size: 24px; margin: 0; color: var(--danger); }
+        /* شاشة الدخول */
+        #login-screen { position: fixed; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: #fff; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
         
-        .search-container { position: sticky; top: 10px; z-index: 10; background: #000; padding: 10px 0; }
-        #search-input { width: 100%; padding: 15px; border-radius: 12px; border: none; background: #222; color: #fff; font-size: 16px; box-sizing: border-box; outline: none; border: 1px solid #333; }
+        .container { max-width: 500px; margin: 0 auto; display: none; }
+        .search-box { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; margin: 20px 0; box-sizing: border-box; }
 
-        .stats { font-size: 12px; color: #888; margin: 10px 5px; }
-
-        /* بطاقات البيانات النهائية */
-        .master-card { background: #111; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #222; transition: 0.3s; }
-        .master-card:hover { border-color: var(--danger); }
-        .card-info { margin-bottom: 10px; }
-        .card-info b { display: block; font-size: 16px; color: #fff; }
-        .card-info span { font-size: 13px; color: #aaa; }
+        /* بطاقة البيانات القابلة للتعديل */
+        .card { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        .card label { display: block; font-size: 11px; color: var(--danger); font-weight: bold; margin-bottom: 5px; }
+        .card input { width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 8px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
         
-        .btn-delete-final { width: 100%; background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-delete-final:active { background: var(--danger); color: white; }
-
-        #loading-text { text-align: center; color: var(--danger); font-weight: bold; margin-top: 50px; }
+        .actions { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: var(--success); }
+        .btn-del { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="margin:0">التحكم المطلق</h2>
-            <p style="font-size:12px; color:#666">يرجى إدخال رمز المالك</p>
-            <input type="password" id="owner-pass" placeholder="•••••••">
-            <button class="btn-login" onclick="verifyOwner()">فتح الصلاحيات</button>
+            <h3>الرمز الخاص بالمالك</h3>
+            <input type="password" id="pass" placeholder="•••••••" style="width:100%; padding:10px; margin-bottom:15px; text-align:center;">
+            <button onclick="verify()" style="width:100%; padding:10px; background:#000; color:#fff; border-radius:10px;">دخول</button>
         </div>
     </div>
 
-    <div id="super-admin-content" class="container">
-        <div class="header">
-            <h1>BLACK LIST <span>MASTER</span></h1>
-            <p style="font-size: 12px; color:#888;">إدارة القاعدة النهائية (Sheet 1)</p>
-        </div>
-
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="ابحث عن IMEI أو اسم جهاز..." onkeyup="filterData()">
-        </div>
-
-        <div id="stats-bar" class="stats">جاري تحديث البيانات...</div>
-        
-        <div id="master-list">
-            <div id="loading-text">جاري جلب البيانات من السيرفر...</div>
-        </div>
+    <div id="content" class="container">
+        <h2 style="text-align:center; color:var(--danger)">إدارة القائمة النهائية</h2>
+        <input type="text" class="search-box" id="search" onkeyup="filter()" placeholder="بحث سريع بالاسم أو IMEI...">
+        <div id="stats" style="font-size:12px; color:#888; margin-bottom:10px;"></div>
+        <div id="master-list">جاري التحميل...</div>
     </div>
 
 <script>
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
     let masterData = [];
 
-    // التحقق من كلمة السر
-    function verifyOwner() {
-        const pass = document.getElementById('owner-pass').value;
-        if (pass === '1634111') {
+    function verify() {
+        if(document.getElementById('pass').value === '1634111') {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('super-admin-content').style.display = 'block';
-            fetchMasterData();
-        } else {
-            alert('الرمز السري غير صحيح!');
-        }
+            document.getElementById('content').style.display = 'block';
+            load();
+        } else { alert("الرمز خطأ"); }
     }
 
-    // جلب البيانات من القائمة النهائية
-    async function fetchMasterData() {
-        try {
-            const response = await fetch(scriptUrl + "?action=getMasterData");
-            masterData = await response.json();
-            renderList(masterData);
-        } catch (error) {
-            document.getElementById('loading-text').innerText = "🔴 فشل في جلب البيانات";
-        }
+    async function load() {
+        const res = await fetch(scriptUrl + "?action=getMasterData");
+        masterData = await res.json();
+        render(masterData);
     }
 
-    // عرض البيانات في البطاقات
-    function renderList(data) {
-        const listDiv = document.getElementById('master-list');
-        const statsBar = document.getElementById('stats-bar');
-        listDiv.innerHTML = "";
+    function render(data) {
+        const list = document.getElementById('master-list');
+        document.getElementById('stats').innerText = `الإجمالي: ${data.length - 1} جهاز`;
+        list.innerHTML = "";
         
-        // البدء من الصف الثاني لتخطي العناوين
-        if (data.length <= 1) {
-            listDiv.innerHTML = "<div style='text-align:center; padding:50px;'>القاعدة فارغة حالياً</div>";
-            statsBar.innerText = "لا توجد أجهزة مسجلة";
-            return;
-        }
-
-        statsBar.innerText = `عدد الأجهزة الإجمالي في القاعدة: ${data.length - 1}`;
-
-        for (let i = 1; i < data.length; i++) {
-            const row = data[i];
+        for(let i=1; i<data.length; i++) {
             const card = document.createElement('div');
-            card.className = 'master-card';
+            card.className = 'card';
             card.innerHTML = `
-                <div class="card-info">
-                    <b>${row[1] || 'غير معروف'} - ${row[2] || ''}</b>
-                    <span>IMEI: ${row[4] || '---'}</span>
-                    <span style="display:block; font-size:11px; margin-top:5px;">المالك: ${row[6] || '---'} | اللون: ${row[3] || '---'}</span>
-                </div>
-                <button class="btn-delete-final" onclick="deleteFinalRecord(${i + 1}, this)">حذف نهائي من القاعدة 🗑️</button>
-            `;
-            listDiv.appendChild(card);
+                <label>الشركة</label><input type="text" id="brand-${i+1}" value="${data[i][1] || ''}">
+                <label>الموديل</label><input type="text" id="model-${i+1}" value="${data[i][2] || ''}">
+                <label>IMEI</label><input type="text" id="imei-${i+1}" value="${data[i][4] || ''}">
+                <label>المالك</label><input type="text" id="owner-${i+1}" value="${data[i][6] || ''}">
+                <div class="actions">
+                    <button class="btn btn-save" onclick="update(${i+1}, this)">حفظ التعديل ✅</button>
+                    <button class="btn btn-del" onclick="del(${i+1}, this)">حذف 🗑️</button>
+                </div>`;
+            list.appendChild(card);
         }
     }
 
-    // فحص البحث
-    function filterData() {
-        const term = document.getElementById('search-input').value.toLowerCase();
-        const filtered = masterData.filter((row, index) => {
-            if (index === 0) return false;
-            return row.join(' ').toLowerCase().includes(term);
-        });
-        renderList([masterData[0], ...filtered]);
+    async function update(row, btn) {
+        btn.disabled = true; btn.innerText = "...";
+        const brand = encodeURIComponent(document.getElementById('brand-'+row).value);
+        const model = encodeURIComponent(document.getElementById('model-'+row).value);
+        const imei = encodeURIComponent(document.getElementById('imei-'+row).value);
+        const owner = encodeURIComponent(document.getElementById('owner-'+row).value);
+        
+        await fetch(`${scriptUrl}?action=update_master&row=${row}&brand=${brand}&model=${model}&imei=${imei}&owner=${owner}`, {mode:'no-cors'});
+        alert("تم الحفظ بنجاح");
+        btn.disabled = false; btn.innerText = "حفظ التعديل ✅";
     }
 
-    // حذف نهائي
-    async function deleteFinalRecord(rowNum, btn) {
-        if (!confirm("⚠️ تنبيه: سيتم حذف هذا الجهاز نهائياً من القائمة الأساسية ولن يظهر للجمهور. هل أنت متأكد؟")) return;
+    async function del(row, btn) {
+        if(!confirm("حذف نهائي؟")) return;
+        btn.innerText = "...";
+        await fetch(`${scriptUrl}?action=delete_master&row=${row}`, {mode:'no-cors'});
+        load();
+    }
 
-        btn.disabled = true;
-        btn.innerText = "جاري الحذف...";
-
-        try {
-            await fetch(`${scriptUrl}?action=delete_master&row=${rowNum}`, { mode: 'no-cors' });
-            setTimeout(() => {
-                btn.closest('.master-card').style.opacity = '0.3';
-                btn.innerText = "تم الحذف";
-                fetchMasterData(); // إعادة تحديث القائمة
-            }, 1000);
-        } catch (error) {
-            alert("حدث خطأ في الاتصال");
-            btn.disabled = false;
-            btn.innerText = "حذف نهائي من القاعدة 🗑️";
-        }
+    function filter() {
+        const q = document.getElementById('search').value.toLowerCase();
+        const filtered = masterData.filter((r, idx) => idx !== 0 && r.join(' ').toLowerCase().includes(q));
+        render([masterData[0], ...filtered]);
     }
 </script>
 </body>
