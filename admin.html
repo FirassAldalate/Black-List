@@ -3,156 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لوحة الإدارة - مراجعة وتعديل</title>
+    <title>لوحة التحكم - BLACK LIST</title>
     <style>
-        :root { --accent: #e74c3c; --bg: #1a1a1a; --success: #27ae60; --text-dark: #333; }
+        :root { --accent: #e74c3c; --bg: #1a1a1a; --success: #27ae60; --gray: #888; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
         
-        .container { width: 100%; max-width: 480px; background: #f9f9f9; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .header h1 { font-size: 20px; color: #000; margin: 0; }
-        
-        #status { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 15px; color: #666; }
-        
-        /* تصميم بطاقة الطلب */
-        .pending-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        
-        .info-group { margin-bottom: 12px; display: flex; flex-direction: column; align-items: flex-start; }
-        .info-group label { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 4px; margin-right: 5px; }
-        
-        /* تنسيق مربعات الإدخال القابلة للتعديل */
-        .info-group input { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            font-family: inherit; 
-            box-sizing: border-box; 
-            background: #fff;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-        .info-group input:focus { border-color: var(--success); outline: none; background: #f0fff0; }
+        /* شاشة اللودينج */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-top: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .btn-approve { 
-            width: 100%; 
-            background: var(--success); 
-            color: white; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin-top: 10px; 
-            transition: 0.2s;
-        }
-        .btn-approve:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-approve:disabled { background: #ccc; cursor: not-allowed; }
-
-        .no-data { text-align: center; padding: 40px; color: #888; font-weight: bold; }
+        .container { width: 100%; max-width: 450px; background: #fff; padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); display: none; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .header h1 { font-size: 20px; color: #111; margin: 0; }
         
-        /* شاشة الدخول */
-        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:1000; display:flex; justify-content:center; align-items:center; }
+        .pending-card { background: #f9f9f9; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; }
+        .info-group { margin-bottom: 10px; }
+        .info-group label { display: block; font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 3px; }
+        .info-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; font-weight: 600; }
+
+        /* الأزرار */
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-approve { flex: 2; background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-reject { flex: 1; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        .logo { font-size: 30px; font-weight: 900; color: white; }
+        .logo span { color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="loginOverlay">
-    <div class="container" style="max-width:300px; text-align:center;">
-        <h2 style="margin-bottom:15px;">دخول المسؤول</h2>
-        <input type="password" id="passInput" placeholder="كلمة المرور" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px; text-align:center;">
-        <button onclick="checkLogin()" style="width:100%; background:#000; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:bold;">دخول</button>
-        <p id="loginError" style="color:red; font-size:12px; margin-top:10px;"></p>
+    <div id="loading-overlay">
+        <div class="logo">BLACK<span>LIST</span></div>
+        <div id="loader-icon" class="spinner"></div>
     </div>
-</div>
 
-<div class="container">
-    <div class="header"><h1>مراجعة وتعديل البلاغات</h1></div>
-    <div id="status">🔄 جاري جلب البيانات...</div>
-    <div id="pendingList"></div>
-    <a href="index.html" style="display:block; text-align:center; margin-top:20px; color:#888; text-decoration:none; font-size:13px;">⬅️ العودة للرئيسية</a>
-</div>
+    <div id="main-container" class="container">
+        <div class="header"><h1>مراجعة البلاغات</h1></div>
+        <div id="status" style="text-align:center; font-size:12px; margin-bottom:10px; color:#666;"></div>
+        <div id="pendingList"></div>
+    </div>
 
 <script>
     const pendingUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
-    
-    const ADMIN_PASS = "123456"; 
 
-    function checkLogin() {
-        if (document.getElementById('passInput').value === ADMIN_PASS) {
-            document.getElementById('loginOverlay').style.display = 'none';
+    window.onload = function() {
+        if (navigator.onLine) {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
             loadPending();
-        } else {
-            document.getElementById('loginError').innerText = "❌ كلمة المرور خطأ";
         }
-    }
+    };
 
     async function loadPending() {
         const listDiv = document.getElementById('pendingList');
-        const statusDiv = document.getElementById('status');
         try {
             const response = await fetch(pendingUrl + "&nocache=" + new Date().getTime());
             const data = await response.text();
-            const rows = data.split('\n').filter(r => r.trim() !== '').map(r => 
-                r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim())
-            );
+            const rows = data.split('\n').filter(r => r.trim() !== '').map(r => r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim()));
 
             listDiv.innerHTML = "";
             if (rows.length <= 1) {
-                statusDiv.innerHTML = "✅ لا توجد طلبات معلقة";
-                listDiv.innerHTML = '<div class="no-data">قائمة الانتظار فارغة حالياً</div>';
+                listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد بلاغات جديدة</div>';
                 return;
             }
 
-            statusDiv.innerHTML = `يوجد (${rows.length - 1}) بلاغات بانتظار المراجعة`;
-
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                if (!row[4]) continue; 
                 const card = document.createElement('div');
                 card.className = 'pending-card';
                 card.innerHTML = `
                     <div class="info-group"><label>الشركة</label><input type="text" id="brand-${i+1}" value="${row[1] || ''}"></div>
                     <div class="info-group"><label>الموديل</label><input type="text" id="model-${i+1}" value="${row[2] || ''}"></div>
-                    <div class="info-group"><label>اللون</label><input type="text" id="color-${i+1}" value="${row[3] || ''}"></div>
-                    <div class="info-group"><label>رقم IMEI</label><input type="number" id="imei-${i+1}" value="${row[4] || ''}"></div>
-                    <div class="info-group"><label>هاتف المالك</label><input type="text" id="owner-${i+1}" value="${row[6] || ''}"></div>
-                    <button class="btn-approve" onclick="approveEntry(${i+1}, this)">✅ تعديل وموافقة على النقل</button>
+                    <div class="info-group"><label>IMEI</label><input type="number" id="imei-${i+1}" value="${row[4] || ''}"></div>
+                    <div class="actions">
+                        <button class="btn-approve" onclick="processRequest(${i+1}, 'approve', this)">✅ موافقة</button>
+                        <button class="btn-reject" onclick="processRequest(${i+1}, 'delete', this)">🗑️ رفض</button>
+                    </div>
                 `;
                 listDiv.appendChild(card);
             }
-        } catch (e) {
-            statusDiv.innerHTML = "🔴 خطأ في جلب البيانات";
-        }
+        } catch (e) { console.log(e); }
     }
 
-    async function approveEntry(rowNumber, btn) {
-        if (!confirm("هل تريد حفظ هذه البيانات ونقلها للقائمة الرئيسية؟")) return;
-        
-        btn.disabled = true;
-        btn.innerText = "جاري النقل...";
-        
-        // تجميع البيانات المعدلة من الحقول
-        const brand = document.getElementById(`brand-${rowNumber}`).value;
-        const model = document.getElementById(`model-${rowNumber}`).value;
-        const color = document.getElementById(`color-${rowNumber}`).value;
-        const imei = document.getElementById(`imei-${rowNumber}`).value;
-        const owner = document.getElementById(`owner-${rowNumber}`).value;
+    async function processRequest(rowNumber, type, btn) {
+        const confirmMsg = type === 'approve' ? "تعديل وموافقة؟" : "هل أنت متأكد من حذف البلاغ نهائياً؟";
+        if (!confirm(confirmMsg)) return;
 
-        const finalUrl = `${scriptUrl}?action=approve_with_edit&row=${rowNumber}&brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}&color=${encodeURIComponent(color)}&imei=${encodeURIComponent(imei)}&owner=${encodeURIComponent(owner)}`;
+        btn.disabled = true;
+        btn.innerText = "...";
+
+        let url = "";
+        if (type === 'approve') {
+            const brand = encodeURIComponent(document.getElementById(`brand-${rowNumber}`).value);
+            const model = encodeURIComponent(document.getElementById(`model-${rowNumber}`).value);
+            const imei = encodeURIComponent(document.getElementById(`imei-${rowNumber}`).value);
+            url = `${scriptUrl}?action=approve_with_edit&row=${rowNumber}&brand=${brand}&model=${model}&imei=${imei}`;
+        } else {
+            url = `${scriptUrl}?action=delete_request&row=${rowNumber}`;
+        }
 
         try {
-            await fetch(finalUrl, { mode: 'no-cors' });
+            await fetch(url, { mode: 'no-cors' });
             setTimeout(() => {
-                btn.parentElement.style.opacity = '0.5';
-                btn.innerText = "✔️ تم النقل بنجاح";
-                loadPending();
-            }, 1500);
+                btn.closest('.pending-card').remove();
+                if(document.querySelectorAll('.pending-card').length === 0) loadPending();
+            }, 1000);
         } catch (e) {
-            alert("حدث خطأ في الاتصال");
+            alert("خطأ في الاتصال");
             btn.disabled = false;
         }
     }
