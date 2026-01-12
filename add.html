@@ -2,112 +2,44 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>إضافة بلاغ جديد</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إرسال بلاغ جديد</title>
     <style>
         :root { --accent: #e74c3c; --bg: #1a1a1a; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; color: white; }
-        
-        /* الحاوية الرئيسية باللون الأبيض كما في التصميم الذي أعجبك */
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; color: white; }
         .container { width: 100%; max-width: 450px; background: white; padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); color: #333; margin-top: 20px; }
-        
         .main-title { text-align: center; font-size: 24px; font-weight: 900; margin-bottom: 5px; color: #000; }
-        .sub-title { text-align: center; font-size: 11px; color: var(--accent); margin-bottom: 25px; font-weight: bold; }
-        
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #666; padding-right: 5px; }
-        
-        .input-group input { 
-            width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee; 
-            font-size: 15px; outline: none; box-sizing: border-box; text-align: center; 
-            background: #fdfdfd; transition: 0.3s;
-        }
-        .input-group input:focus { border-color: #000; background: #fff; }
-
-        button { 
-            width: 100%; background: #000; color: white; border: none; padding: 18px; 
-            border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; 
-            margin-top: 10px; transition: 0.3s;
-        }
-        button:active { transform: scale(0.98); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        .back-link { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-size: 13px; }
-        #msg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; min-height: 20px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #666; }
+        .input-group input { width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #eee; font-size: 15px; outline: none; box-sizing: border-box; text-align: center; }
+        button { width: 100%; background: #000; color: white; border: none; padding: 18px; border-radius: 20px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        #msg { text-align: center; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="main-title">إرسال بلاغ جديد</div>
-    <div class="sub-title">REPORT STOLEN DEVICE</div>
-    
     <form id="stolenForm">
-        <div class="input-group">
-            <label>الشركة المصنعة</label>
-            <input type="text" name="brand" placeholder="مثلاً: Samsung, iPhone" required>
-        </div>
-        <div class="input-group">
-            <label>موديل الهاتف</label>
-            <input type="text" name="model" placeholder="مثلاً: Galaxy S21, iPhone 13" required>
-        </div>
-        <div class="input-group">
-            <label>اللون</label>
-            <input type="text" name="color" placeholder="مثلاً: أسود، أبيض" required>
-        </div>
-        <div class="input-group">
-            <label>رقم IMEI (15 رقم)</label>
-            <input type="number" name="imei" placeholder="أدخل الرقم بدقة" required>
-        </div>
-        <div class="input-group">
-            <label>السيريال (اختياري)</label>
-            <input type="text" name="serial" placeholder="Serial Number">
-        </div>
-        <div class="input-group">
-            <label>رقم هاتف المالك</label>
-            <input type="tel" name="phone" placeholder="للتواصل معك في حال العثور عليه" required>
-        </div>
-
+        <div class="input-group"><label>الشركة المصنعة</label><input type="text" name="brand" required></div>
+        <div class="input-group"><label>موديل الهاتف</label><input type="text" name="model" required></div>
+        <div class="input-group"><label>اللون</label><input type="text" name="color" required></div>
+        <div class="input-group"><label>رقم IMEI</label><input type="text" name="imei" required></div>
+        <div class="input-group"><label>السيريال (S/N)</label><input type="text" name="serial"></div>
+        <div class="input-group"><label>رقم الهاتف</label><input type="tel" name="phone" required></div>
         <button type="submit" id="submitBtn">إرسال البلاغ الآن</button>
     </form>
-    
     <div id="msg"></div>
-    <a href="index.html" class="back-link">⬅️ العودة للرئيسية</a>
 </div>
-
 <script>
-    const form = document.getElementById('stolenForm');
-    const msg = document.getElementById('msg');
-    const btn = document.getElementById('submitBtn');
-
-    // رابط الـ Script الموحد (Web App URL)
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
-
-    form.addEventListener('submit', e => {
+    document.getElementById('stolenForm').addEventListener('submit', e => {
         e.preventDefault();
-        btn.disabled = true;
-        btn.innerText = "جاري الإرسال...";
-        msg.innerHTML = "🔄 يرجى الانتظار...";
-        msg.style.color = "#888";
-
-        // إرسال البيانات باستخدام FormData لتتطابق مع دالة doPost في السكريبت
-        fetch(scriptURL, { 
-            method: 'POST', 
-            body: new FormData(form)
-        })
-        .then(response => {
-            msg.innerHTML = "✅ تم إرسال البلاغ بنجاح! سيتم مراجعته قريباً.";
-            msg.style.color = "green";
-            form.reset();
-            btn.disabled = false;
-            btn.innerText = "إرسال بلاغ جديد";
-        })
-        .catch(error => {
-            console.error('Error!', error.message);
-            msg.innerHTML = "❌ حدث خطأ في الإرسال، حاول مرة أخرى.";
-            msg.style.color = "red";
-            btn.disabled = false;
-            btn.innerText = "إرسال البلاغ الآن";
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.innerText = "جاري الإرسال...";
+        fetch(scriptURL, { method: 'POST', body: new FormData(e.target)})
+        .then(() => {
+            document.getElementById('msg').innerHTML = "✅ تم الإرسال بنجاح!";
+            e.target.reset(); btn.disabled = false; btn.innerText = "إرسال بلاغ جديد";
         });
     });
 </script>
