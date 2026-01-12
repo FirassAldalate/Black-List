@@ -2,118 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لوحة التحكم - BLACK LIST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم البلاغات</title>
     <style>
-        :root { --accent: #e74c3c; --bg: #1a1a1a; --success: #27ae60; --gray: #888; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        
-        /* شاشة اللودينج */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-top: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .container { width: 100%; max-width: 450px; background: #fff; padding: 25px; border-radius: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); display: none; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .header h1 { font-size: 20px; color: #111; margin: 0; }
-        
-        .pending-card { background: #f9f9f9; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; }
-        .info-group { margin-bottom: 10px; }
-        .info-group label { display: block; font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 3px; }
-        .info-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; font-weight: 600; }
-
-        /* الأزرار */
+        body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 10px; }
+        #login-screen { text-align: center; margin-top: 50px; background: #fff; color: #000; padding: 30px; border-radius: 20px; max-width: 350px; margin-left: auto; margin-right: auto; }
+        input[type="password"] { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 18px; box-sizing: border-box; }
+        .card { background: #fff; color: #333; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); max-width: 450px; margin-left: auto; margin-right: auto; }
+        .info-row { margin-bottom: 8px; }
+        .info-row label { display: block; font-size: 11px; color: #e74c3c; font-weight: bold; }
+        .info-row input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; font-weight: bold; }
         .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-approve { flex: 2; background: var(--success); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-reject { flex: 1; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        
-        .logo { font-size: 30px; font-weight: 900; color: white; }
-        .logo span { color: var(--accent); }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-ok { background: #27ae60; } .btn-no { background: #e74c3c; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay">
-        <div class="logo">BLACK<span>LIST</span></div>
-        <div id="loader-icon" class="spinner"></div>
+    <div id="login-screen">
+        <h3>تسجيل الدخول للأدمن</h3>
+        <input type="password" id="passInput" placeholder="كلمة السر">
+        <button onclick="checkLogin()" style="width:100%; padding:12px; background:#000; color:#fff; border-radius:10px; border:none; cursor:pointer;">دخول</button>
     </div>
 
-    <div id="main-container" class="container">
-        <div class="header"><h1>مراجعة البلاغات</h1></div>
-        <div id="status" style="text-align:center; font-size:12px; margin-bottom:10px; color:#666;"></div>
-        <div id="pendingList"></div>
+    <div id="admin-content" style="display:none;">
+        <h2 style="text-align:center">مراجعة البلاغات</h2>
+        <div id="list">جاري تحميل البيانات...</div>
     </div>
 
 <script>
-    const pendingUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
 
-    window.onload = function() {
-        if (navigator.onLine) {
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('main-container').style.display = 'block';
-            loadPending();
-        }
-    };
-
-    async function loadPending() {
-        const listDiv = document.getElementById('pendingList');
-        try {
-            const response = await fetch(pendingUrl + "&nocache=" + new Date().getTime());
-            const data = await response.text();
-            const rows = data.split('\n').filter(r => r.trim() !== '').map(r => r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim()));
-
-            listDiv.innerHTML = "";
-            if (rows.length <= 1) {
-                listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد بلاغات جديدة</div>';
-                return;
-            }
-
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const card = document.createElement('div');
-                card.className = 'pending-card';
-                card.innerHTML = `
-                    <div class="info-group"><label>الشركة</label><input type="text" id="brand-${i+1}" value="${row[1] || ''}"></div>
-                    <div class="info-group"><label>الموديل</label><input type="text" id="model-${i+1}" value="${row[2] || ''}"></div>
-                    <div class="info-group"><label>IMEI</label><input type="number" id="imei-${i+1}" value="${row[4] || ''}"></div>
-                    <div class="actions">
-                        <button class="btn-approve" onclick="processRequest(${i+1}, 'approve', this)">✅ موافقة</button>
-                        <button class="btn-reject" onclick="processRequest(${i+1}, 'delete', this)">🗑️ رفض</button>
-                    </div>
-                `;
-                listDiv.appendChild(card);
-            }
-        } catch (e) { console.log(e); }
+    function checkLogin() {
+        if(document.getElementById('passInput').value === '123789') {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            loadData();
+        } else { alert("كلمة السر خاطئة!"); }
     }
 
-    async function processRequest(rowNumber, type, btn) {
-        const confirmMsg = type === 'approve' ? "تعديل وموافقة؟" : "هل أنت متأكد من حذف البلاغ نهائياً؟";
-        if (!confirm(confirmMsg)) return;
+    async function loadData() {
+        const res = await fetch(csvUrl + "?t=" + Date.now());
+        const text = await res.text();
+        const rows = text.split('\n').filter(r => r.trim() !== '').map(r => r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim()));
+        const list = document.getElementById('list');
+        list.innerHTML = rows.length > 1 ? "" : "<p style='text-align:center'>لا توجد طلبات</p>";
 
-        btn.disabled = true;
-        btn.innerText = "...";
+        for (let i = 1; i < rows.length; i++) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="info-row"><label>الشركة</label><input type="text" id="br-${i+1}" value="${rows[i][1]}"></div>
+                <div class="info-row"><label>الموديل</label><input type="text" id="mo-${i+1}" value="${rows[i][2]}"></div>
+                <div class="info-row"><label>اللون</label><input type="text" id="cl-${i+1}" value="${rows[i][3]}"></div>
+                <div class="info-row"><label>IMEI</label><input type="text" id="im-${i+1}" value="${rows[i][4]}"></div>
+                <div class="info-row"><label>السيريال</label><input type="text" id="sn-${i+1}" value="${rows[i][5]}"></div>
+                <div class="info-row"><label>الهاتف</label><input type="text" id="ph-${i+1}" value="${rows[i][6]}"></div>
+                <div class="actions">
+                    <button class="btn btn-ok" onclick="handle(${i+1}, 'approve', this)">نشر ✅</button>
+                    <button class="btn btn-no" onclick="handle(${i+1}, 'delete', this)">حذف 🗑️</button>
+                </div>`;
+            list.appendChild(card);
+        }
+    }
 
-        let url = "";
+    async function handle(row, type, btn) {
+        btn.innerText = "..."; btn.disabled = true;
+        let url = `${scriptUrl}?row=${row}&action=${type === 'approve' ? 'approve_with_edit' : 'delete_pending'}`;
         if (type === 'approve') {
-            const brand = encodeURIComponent(document.getElementById(`brand-${rowNumber}`).value);
-            const model = encodeURIComponent(document.getElementById(`model-${rowNumber}`).value);
-            const imei = encodeURIComponent(document.getElementById(`imei-${rowNumber}`).value);
-            url = `${scriptUrl}?action=approve_with_edit&row=${rowNumber}&brand=${brand}&model=${model}&imei=${imei}`;
-        } else {
-            url = `${scriptUrl}?action=delete_request&row=${rowNumber}`;
+            url += `&brand=${encodeURIComponent(document.getElementById('br-'+row).value)}` +
+                   `&model=${encodeURIComponent(document.getElementById('mo-'+row).value)}` +
+                   `&color=${encodeURIComponent(document.getElementById('cl-'+row).value)}` +
+                   `&imei=${encodeURIComponent(document.getElementById('im-'+row).value)}` +
+                   `&serial=${encodeURIComponent(document.getElementById('sn-'+row).value)}` +
+                   `&owner=${encodeURIComponent(document.getElementById('ph-'+row).value)}`;
         }
-
-        try {
-            await fetch(url, { mode: 'no-cors' });
-            setTimeout(() => {
-                btn.closest('.pending-card').remove();
-                if(document.querySelectorAll('.pending-card').length === 0) loadPending();
-            }, 1000);
-        } catch (e) {
-            alert("خطأ في الاتصال");
-            btn.disabled = false;
-        }
+        await fetch(url, { mode: 'no-cors' });
+        btn.closest('.card').remove();
     }
 </script>
 </body>
