@@ -15,7 +15,7 @@
 
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #bbb; }
-        .input-group input, .input-group select { width: 100%; padding: 12px 15px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .input-group input { width: 100%; padding: 12px 15px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
         .input-group input:focus { border-color: var(--accent); background: #222; }
 
         .btn-submit { width: 100%; background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
@@ -33,36 +33,41 @@
 <div class="form-container">
     <div class="header">
         <h1>بلاغ جديد</h1>
-        <p>يرجى إدخال بيانات الجهاز المفقود بدقة</p>
+        <p>أدخل بيانات الجهاز بدقة لتسهيل العثور عليه</p>
     </div>
 
     <form id="addForm">
         <div class="input-group">
             <label>شركة الجهاز</label>
-            <input type="text" name="brand" placeholder="مثلاً: iPhone, Samsung" required>
+            <input type="text" name="brand" placeholder="iPhone, Samsung, Xiaomi..." required>
         </div>
 
         <div class="input-group">
             <label>الموديل</label>
-            <input type="text" name="model" placeholder="مثلاً: 14 Pro Max" required>
+            <input type="text" name="model" placeholder="مثلاً: 15 Pro Max" required>
         </div>
 
         <div class="input-group">
-            <label>رقم الـ IMEI (15 رقم)</label>
-            <input type="number" name="imei" placeholder="أدخل الرقم التسلسلي" required>
+            <label>رقم الـ IMEI (الأساسي)</label>
+            <input type="text" name="imei" placeholder="أدخل 15 رقم" required>
+        </div>
+
+        <div class="input-group">
+            <label>السيريال نمبر (S/N)</label>
+            <input type="text" name="serial" placeholder="الرقم التسلسلي للجهاز">
         </div>
 
         <div class="input-group">
             <label>لون الجهاز</label>
-            <input type="text" name="color" placeholder="مثلاً: أسود، فضي">
+            <input type="text" name="color" placeholder="أدخل اللون">
         </div>
 
         <div class="input-group">
-            <label>رقم هاتف للتواصل</label>
-            <input type="tel" name="phone" placeholder="رقم صاحب الجهاز" required>
+            <label>رقم هاتف المالك</label>
+            <input type="tel" name="phone" placeholder="للتواصل معك في حال العثور عليه" required>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn">إرسال البلاغ للمراجعة</button>
+        <button type="submit" class="btn-submit" id="submitBtn">إرسال البلاغ</button>
     </form>
 
     <div id="response-msg"></div>
@@ -86,7 +91,6 @@
         const params = new URLSearchParams(formData).toString();
 
         try {
-            // إرسال البيانات باستخدام POST للسكريبت
             await fetch(scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -94,18 +98,17 @@
                 body: params
             });
 
-            // بما أننا نستخدم no-cors، نفترض النجاح إذا لم يحدث خطأ في الاتصال
             msg.className = 'success';
-            msg.innerText = "✅ تم إرسال البلاغ بنجاح! سيتم فحص الطلب ونشره قريباً.";
+            msg.innerText = "✅ تم الإرسال! سيظهر بلاغك بعد مراجعة الإدارة.";
             msg.style.display = 'block';
             form.reset();
         } catch (error) {
             msg.className = 'error';
-            msg.innerText = "❌ حدث خطأ في الاتصال. حاول مرة أخرى.";
+            msg.innerText = "❌ فشل الإرسال، تحقق من الاتصال.";
             msg.style.display = 'block';
         } finally {
             btn.disabled = false;
-            btn.innerText = "إرسال البلاغ للمراجعة";
+            btn.innerText = "إرسال البلاغ";
         }
     };
 </script>
