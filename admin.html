@@ -2,106 +2,69 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لوحة التحكم - BLACK LIST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
     <style>
-        :root { --accent: #e74c3c; --bg: #000; --success: #27ae60; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: white; }
-        
-        .container { width: 100%; max-width: 450px; margin: auto; background: #fff; padding: 25px; border-radius: 30px; color: #000; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        .pending-card { background: #f9f9f9; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #eee; position: relative; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; }
+        .card { background: #fff; color: #000; border-radius: 20px; padding: 15px; margin-bottom: 20px; }
         .info-group { margin-bottom: 10px; }
-        .info-group label { display: block; font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 3px; }
-        .info-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; font-weight: 600; background: #fff; }
-
-        .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-approve { background: var(--success); }
-        .btn-reject { background: var(--accent); }
+        .info-group label { display: block; font-size: 11px; color: #e74c3c; font-weight: bold; }
+        .info-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; color: #fff; cursor: pointer; }
+        .btn-approve { background: #27ae60; }
+        .btn-reject { background: #e74c3c; }
     </style>
 </head>
 <body>
 
-    <div id="main-container" class="container">
-        <div class="header"><h3>مراجعة البلاغات الجديدة</h3></div>
-        <div id="pendingList">جاري تحميل الطلبات...</div>
-    </div>
+    <h2 style="text-align:center">مراجعة البلاغات</h2>
+    <div id="list">جاري التحميل...</div>
 
 <script>
-    // رابط الـ CSV لورقة الـ Pending
-    const pendingUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
-    // رابط الـ Web App الخاص بك
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=341654715&single=true&output=csv';
 
-    async function loadPending() {
-        const listDiv = document.getElementById('pendingList');
-        try {
-            const response = await fetch(pendingUrl + "&nocache=" + new Date().getTime());
-            const data = await response.text();
-            const rows = data.split('\n').filter(r => r.trim() !== '').map(r => r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim()));
-
-            listDiv.innerHTML = "";
-            if (rows.length <= 1) {
-                listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">لا توجد بلاغات بانتظار المراجعة</div>';
-                return;
-            }
-
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i]; // الأعمدة: 0:التاريخ، 1:الشركة، 2:الموديل، 3:اللون، 4:IMEI، 5:السيريال، 6:الهاتف
-                const card = document.createElement('div');
-                card.className = 'pending-card';
-                card.innerHTML = `
-                    <div class="info-group"><label>الشركة</label><input type="text" id="brand-${i+1}" value="${row[1] || ''}"></div>
-                    <div class="info-group"><label>الموديل</label><input type="text" id="model-${i+1}" value="${row[2] || ''}"></div>
-                    <div class="info-group"><label>IMEI</label><input type="text" id="imei-${i+1}" value="${row[4] || ''}"></div>
-                    <div class="info-group"><label>السيريال (S/N)</label><input type="text" id="serial-${i+1}" value="${row[5] || ''}"></div>
-                    <div class="info-group"><label>اللون</label><input type="text" id="color-${i+1}" value="${row[3] || ''}"></div>
-                    <div class="info-group"><label>هاتف المالك</label><input type="text" id="owner-${i+1}" value="${row[6] || ''}"></div>
-                    <div class="actions">
-                        <button class="btn btn-approve" onclick="process(${i+1}, 'approve', this)">✅ موافقة</button>
-                        <button class="btn btn-reject" onclick="process(${i+1}, 'delete', this)">🗑️ رفض</button>
-                    </div>
-                `;
-                listDiv.appendChild(card);
-            }
-        } catch (e) { listDiv.innerHTML = "خطأ في تحميل البيانات"; }
-    }
-
-    async function process(rowNum, action, btn) {
-        if (!confirm(action === 'approve' ? "تأكيد الموافقة والنشر؟" : "تأكيد حذف الطلب نهائياً؟")) return;
+    async function load() {
+        const list = document.getElementById('list');
+        const res = await fetch(csvUrl + "?t=" + Date.now());
+        const data = await res.text();
+        const rows = data.split('\n').filter(r => r.trim() !== '').map(r => r.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim()));
         
-        btn.disabled = true;
-        const originalText = btn.innerText;
-        btn.innerText = "...";
-
-        let url = `${scriptUrl}?row=${rowNum}`;
-        if (action === 'approve') {
-            const b = encodeURIComponent(document.getElementById(`brand-${rowNum}`).value);
-            const m = encodeURIComponent(document.getElementById(`model-${rowNum}`).value);
-            const im = encodeURIComponent(document.getElementById(`imei-${rowNum}`).value);
-            const cl = encodeURIComponent(document.getElementById(`color-${rowNum}`).value);
-            const ow = encodeURIComponent(document.getElementById(`owner-${rowNum}`).value);
-            url += `&action=approve_with_edit&brand=${b}&model=${m}&imei=${im}&color=${cl}&owner=${ow}`;
-        } else {
-            url += `&action=delete_pending`;
-        }
-
-        try {
-            await fetch(url, { mode: 'no-cors' });
-            setTimeout(() => {
-                btn.closest('.pending-card').remove();
-                if(document.querySelectorAll('.pending-card').length === 0) loadPending();
-            }, 1000);
-        } catch (e) {
-            alert("خطأ في الاتصال بالسيرفر");
-            btn.disabled = false;
-            btn.innerText = originalText;
+        list.innerHTML = rows.length > 1 ? "" : "<p>لا توجد طلبات</p>";
+        for (let i = 1; i < rows.length; i++) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="info-group"><label>الشركة</label><input type="text" id="br-${i+1}" value="${rows[i][1]}"></div>
+                <div class="info-group"><label>الموديل</label><input type="text" id="mo-${i+1}" value="${rows[i][2]}"></div>
+                <div class="info-group"><label>IMEI</label><input type="text" id="im-${i+1}" value="${rows[i][4]}"></div>
+                <div class="info-group"><label>سيريال</label><input type="text" id="sn-${i+1}" value="${rows[i][5]}"></div>
+                <div class="info-group"><label>هاتف المالك</label><input type="text" id="ow-${i+1}" value="${rows[i][6]}"></div>
+                <div class="btn-group">
+                    <button class="btn btn-approve" onclick="send(${i+1}, 'approve', this)">موافقة ✅</button>
+                    <button class="btn btn-reject" onclick="send(${i+1}, 'delete', this)">حذف 🗑️</button>
+                </div>`;
+            list.appendChild(card);
         }
     }
 
-    window.onload = loadPending;
+    async function send(row, action, btn) {
+        if(!confirm("هل أنت متأكد؟")) return;
+        btn.disabled = true;
+        let url = `${scriptUrl}?row=${row}&action=${action === 'approve' ? 'approve_with_edit' : 'delete_pending'}`;
+        if(action === 'approve') {
+            const br = encodeURIComponent(document.getElementById('br-'+row).value);
+            const mo = encodeURIComponent(document.getElementById('mo-'+row).value);
+            const im = encodeURIComponent(document.getElementById('im-'+row).value);
+            const sn = encodeURIComponent(document.getElementById('sn-'+row).value);
+            const ow = encodeURIComponent(document.getElementById('ow-'+row).value);
+            url += `&brand=${br}&model=${mo}&imei=${im}&serial=${sn}&owner=${ow}&color=`;
+        }
+        await fetch(url, {mode: 'no-cors'});
+        btn.closest('.card').remove();
+    }
+    load();
 </script>
 </body>
 </html>
