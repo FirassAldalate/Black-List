@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoneSpec Pro | المحرك الذكي</title>
+    <link rel="stylesheet" href="phone-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header class="main-header">
+            <div class="logo-area">
+                <span class="icon">🚀</span>
+                <h1>Phone<span class="highlight">Spec</span></h1>
+            </div>
+            <p class="tagline">اكتشف مواصفات الهواتف بدقة واحترافية</p>
+        </header>
+
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" id="phoneQuery" placeholder="ابحث عن: iPhone 15, Xiaomi, Pixel...">
+                <button id="execSearch">
+                    <span id="btnLabel">تحليل البيانات</span>
+                </button>
+            </div>
+        </section>
+
+        <div id="statusMessage" class="status-box"></div>
+
+        <main id="resultContainer" class="content-hidden">
+            <div class="hero-card">
+                <div class="image-holder">
+                    <img id="deviceImg" src="" alt="صورة الجهاز">
+                </div>
+                <div class="primary-details">
+                    <h2 id="deviceName"></h2>
+                    <span id="deviceBrand" class="brand-tag"></span>
+                </div>
+            </div>
+
+            <div class="specs-box" id="specsDisplay">
+                </div>
+        </main>
+    </div>
+
+    <script src="phone-logic.js"></script>
+</body>
+</html>
