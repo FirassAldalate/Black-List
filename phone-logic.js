@@ -1,39 +1,75 @@
-const API_URL = 'https://phone-specs-api.vercel.app/';
+const API_BASE = 'https://phone-specs-api.vercel.app/';
 
-const dom = {
-    input: document.getElementById('phoneQuery'),
-    btn: document.getElementById('execSearch'),
-    results: document.getElementById('resultContainer'),
-    specs: document.getElementById('specsDisplay'),
-    status: document.getElementById('statusMessage')
+const elements = {
+    input: document.getElementById('phoneSearchInput'),
+    btn: document.getElementById('searchBtn'),
+    results: document.getElementById('resultsView'),
+    specs: document.getElementById('specsContainer'),
+    status: document.getElementById('statusIndicator')
 };
 
-async function getPhoneSpecs() {
-    const val = dom.input.value.trim();
-    if(!val) return;
+async function handleSearch() {
+    const query = elements.input.value.trim();
+    if (!query) return;
 
-    // حالة التحميل
-    dom.status.innerHTML = "🔍 جاري البحث في قاعدة البيانات...";
-    dom.btn.disabled = true;
-    dom.results.classList.add('content-hidden');
+    // تهيئة الواجهة للبحث
+    elements.status.innerHTML = "📡 جاري الاتصال بقاعدة البيانات...";
+    elements.btn.disabled = true;
+    elements.results.classList.add('hidden');
 
     try {
-        const search = await fetch(`${API_URL}search?query=${val}`);
-        const searchRes = await search.json();
+        const searchResponse = await fetch(`${API_BASE}search?query=${query}`);
+        const searchData = await searchResponse.json();
 
-        if(!searchRes.data.phones.length) throw "عذراً، لم نجد مواصفات لهذا الجهاز.";
+        // الحماية من خطأ TypeError: فحص وجود البيانات أولاً
+        if (searchData && searchData.status && searchData.data && searchData.data.phones && searchData.data.phones.length > 0) {
+            
+            const firstPhoneSlug = searchData.data.phones[0].slug;
+            
+            // طلب تفاصيل الهاتف المختار
+            const detailResponse = await fetch(`${API_BASE}${firstPhoneSlug}`);
+            const detailData = await detailResponse.json();
 
-        const detail = await fetch(`${API_URL}${searchRes.data.phones[0].slug}`);
-        const detailRes = await detail.json();
-        
-        renderUI(detailRes.data);
-    } catch (err) {
-        dom.status.innerHTML = `⚠️ ${err}`;
+            if (detailData.status) {
+                renderPhone(detailData.data);
+            } else {
+                throw "فشل في جلب تفاصيل الجهاز.";
+            }
+
+        } else {
+            throw "لم يتم العثور على نتائج. حاول كتابة اسم الجهاز بشكل صحيح.";
+        }
+
+    } catch (error) {
+        elements.status.innerHTML = `⚠️ خطأ: ${error}`;
+        console.error("Technical details:", error);
     } finally {
-        dom.btn.disabled = false;
+        elements.btn.disabled = false;
     }
 }
 
+function renderPhone(phone) {
+    elements.status.innerHTML = "";
+    document.getElementById('fullPhoneName').innerText = phone.phone_name;
+    document.getElementById('brandLabel').innerText = phone.brand;
+    document.getElementById('mainPhoneImg').src = phone.thumbnail;
+
+    // عرض المواصفات الأساسية (نختار أول 8 مواصفات مهمة)
+    elements.specs.innerHTML = phone.specifications.slice(0, 10).map(s => `
+        <div class="spec-card">
+            <h4>${s.title}</h4>
+            <p>${s.specs[0].val[0]}</p>
+        </div>
+    `).join('');
+
+    elements.results.classList.remove('hidden');
+}
+
+// استماع للأحداث
+elements.btn.addEventListener('click', handleSearch);
+elements.input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleSearch();
+});
 function renderUI(data) {
     dom.status.innerHTML = "";
     document.getElementById('deviceName').innerText = data.phone_name;
