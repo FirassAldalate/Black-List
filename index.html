@@ -236,67 +236,6 @@
     }
 </style>
 
-<div id="smart-ad-box" onclick="handleAdClick()">
-    <div id="smart-ad-content"></div>
-</div>
-<div id="copy-toast">تم نسخ رقم التواصل بنجاح!</div>
-
-<script>
-    (function() {
-        const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
-        const box = document.getElementById('smart-ad-box');
-        const content = document.getElementById('smart-ad-content');
-        const toast = document.getElementById('copy-toast');
-        let contactNumber = ""; // سيتم جلبه من ملف JSON
-
-        window.handleAdClick = function() {
-            if (!contactNumber) return;
-
-            // محاولة النسخ
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(contactNumber).then(showToast);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = contactNumber;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast();
-<style>
-    #ad-container-fixed {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 85px !important;
-        z-index: 2147483647 !important; /* أعلى طبقة ممكنة */
-        background: #0f172a !important;
-        border-top: 2px solid #ffb100 !important;
-        display: none; /* سيظهر بواسطة JS */
-    }
-    #ad-img-view { width: 100%; height: 85px; object-fit: fill; display: block; }
-    .dhikr-view {
-        background: #0f172a; height: 85px; display: flex; flex-direction: column;
-        justify-content: center; align-items: center; text-align: center; color: #ffb100;
-    }
-    #copy-notice {
-        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-        background: #25d366; color: white; padding: 8px 20px; border-radius: 20px;
-        display: none; z-index: 2147483647; font-weight: bold;
-    }
-</style>
-
-<div id="ad-container-fixed"></div>
-<div id="copy-notice">تم نسخ الرقم بنجاح!</div>
-
-<script>
-(function() {
-    const URL_JSON = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
-    const container = document.getElementById('ad-container-fixed');
-    const notice = document.getElementById('copy-notice');
-
-    function showFallback() {
         container.style.display = "block";
         document.body.style.paddingBottom = "90px";
         container.innerHTML = `<div class="dhikr-view"><b>لا إله إلا الله محمد رسول الله</b><br><small>اللهم صلِّ على سيدنا محمد</small></div>`;
@@ -325,6 +264,70 @@
                 container.innerHTML = `<img id="ad-img-view" src="${data.image_url}" alt="Ad">`;
                 
                 container.onclick = function() {
+<style>
+    #ad-container-fixed {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 85px !important;
+        z-index: 2147483647 !important; 
+        background: #0f172a !important;
+        border-top: 2px solid #ffb100 !important;
+        display: none; 
+        cursor: pointer;
+    }
+    #ad-img-view { width: 100%; height: 85px; object-fit: fill; display: block; }
+    .dhikr-view {
+        background: #0f172a; height: 85px; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; text-align: center; color: #ffb100;
+        font-family: sans-serif;
+    }
+    #copy-notice {
+        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+        background: #25d366; color: white; padding: 10px 25px; border-radius: 50px;
+        display: none; z-index: 2147483647; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+</style>
+
+<div id="ad-container-fixed"></div>
+<div id="copy-notice">تم نسخ رقم التواصل بنجاح!</div>
+
+<script>
+(function() {
+    const URL_JSON = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+    const container = document.getElementById('ad-container-fixed');
+    const notice = document.getElementById('copy-notice');
+
+    function showFallback() {
+        container.style.display = "block";
+        document.body.style.paddingBottom = "100px";
+        container.innerHTML = `<div class="dhikr-view"><b style="font-size:1.1rem">لا إله إلا الله محمد رسول الله</b><br><span style="color:#eee">اللهم صلِّ على سيدنا محمد</span></div>`;
+        container.onclick = null; 
+    }
+
+    function copyToClipboard(text) {
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        notice.style.display = "block";
+        setTimeout(() => { notice.style.display = "none"; }, 2500);
+    }
+
+    async function loadSmartAd() {
+        try {
+            const response = await fetch(URL_JSON + "?t=" + new Date().getTime());
+            const data = await response.json();
+
+            if (data && data.active === true) {
+                container.style.display = "block";
+                document.body.style.paddingBottom = "100px";
+                container.innerHTML = `<img id="ad-img-view" src="${data.image_url}" alt="Ad">`;
+                
+                container.onclick = function() {
                     if (data.link_url) copyToClipboard(data.link_url);
                 };
             } else {
@@ -335,12 +338,9 @@
         }
     }
 
-    // التشغيل المباشر
     loadSmartAd();
 })();
 </script>
-
-
 
 </body>
 </html>
