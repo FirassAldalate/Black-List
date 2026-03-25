@@ -284,24 +284,125 @@
                 const response = await fetch(GITHUB_URL, { cache: "no-store" });
                 const data = await response.json();
                 
-                if (data.active) {
-                    contactNumber = data.link_url; // نستخدم خانة الرابط لوضع الرقم فيها
-                    box.style.display = "block";
-                    document.body.style.paddingBottom = "95px";
-                    content.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ads">`;
-                } else {
-                    // عرض الأذكار إذا كان الإعلان غير نشط
-                    box.style.display = "block";
-                    content.innerHTML = `<div class="dhikr-style"><h2>لا إله إلا الله محمد رسول الله</h2><p>اللهم صلِّ على سيدنا محمد</p></div>`;
-                    box.onclick = null; // تعطيل النسخ عند ظهور الأذكار
-                }
-            } catch (err) {
-                console.error("Ad error");
-            }
-        }
+<style>
+    #smart-ad-box {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        min-height: 85px;
+        z-index: 99999;
+        display: none; /* سيظهر بواسطة الجافا سكريبت */
+        background: #0f172a;
+        border-top: 2px solid #ffb100;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+        cursor: pointer;
+        overflow: hidden;
+    }
 
-        window.addEventListener('load', fetchAd);
-    })();
+    .dhikr-style {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        height: 85px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    @keyframes pulseGlow {
+        0% { color: #ffb100; text-shadow: 0 0 5px rgba(255,177,0,0.4); }
+        50% { color: #ffd061; text-shadow: 0 0 15px rgba(255,177,0,0.8); }
+        100% { color: #ffb100; text-shadow: 0 0 5px rgba(255,177,0,0.4); }
+    }
+
+    .dhikr-style h2 { margin: 0; font-size: 1.1rem; font-weight: 800; animation: pulseGlow 3s infinite; }
+    .dhikr-style p { margin: 2px 0 0 0; font-size: 0.9rem; font-weight: 600; color: #eee; }
+
+    #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
+
+    #copy-toast {
+        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+        background: #25d366; color: white; padding: 10px 25px;
+        border-radius: 50px; font-weight: bold; display: none; z-index: 100000;
+    }
+</style>
+
+<div id="smart-ad-box">
+    <div id="smart-ad-content"></div>
+</div>
+<div id="copy-toast">تم نسخ رقم التواصل!</div>
+
+<script>
+(function() {
+    const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+    const adBox = document.getElementById('smart-ad-box');
+    const adContent = document.getElementById('smart-ad-content');
+    const copyToast = document.getElementById('copy-toast');
+    let contactNum = ""; 
+
+    // وظيفة إظهار الأذكار
+    function showDhikr() {
+        adBox.style.display = "block";
+        document.body.style.paddingBottom = "100px";
+        adContent.innerHTML = `
+            <div class="dhikr-style">
+                <h2>لا إله إلا الله محمد رسول الله</h2>
+                <p>اللهم صلِّ على سيدنا محمد</p>
+            </div>`;
+        adBox.onclick = null; // إزالة وظيفة النسخ عند الأذكار
+    }
+
+    // وظيفة النسخ
+    function copyText(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            copyToast.style.display = "block";
+            setTimeout(() => { copyToast.style.display = "none"; }, 2000);
+        } catch (err) { console.error('فشل النسخ'); }
+        document.body.removeChild(textArea);
+    }
+
+    // جلب البيانات
+    async function initAd() {
+        try {
+            const res = await fetch(GITHUB_URL + "?t=" + new Date().getTime(), { cache: "no-store" });
+            const data = await res.json();
+            
+            if (data && data.active) {
+                contactNum = data.link_url;
+                adBox.style.display = "block";
+                document.body.style.paddingBottom = "100px";
+                adContent.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ad">`;
+                
+                // تفعيل النسخ عند الضغط
+                adBox.onclick = function() {
+                    if (contactNum) copyText(contactNum);
+                };
+            } else {
+                showDhikr();
+            }
+        } catch (e) {
+            console.log("Error loading ad, showing dhikr...");
+            showDhikr();
+        }
+    }
+
+    // التشغيل فور تحميل الصفحة
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        initAd();
+    } else {
+        window.addEventListener('DOMContentLoaded', initAd);
+    }
+
+    // مراقبة حالة الاتصال
+    window.addEventListener('offline', showDhikr);
+    window.addEventListener('online', initAd);
+})();
 </script>
 
 
