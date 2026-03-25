@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إرسال بلاغ جديد</title>
+    <style>
+        /* --- الهوية البصرية (نفس صفحة التحميل والبحث) --- */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-gold: #ffb100;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #25d366;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 177, 0, 0.03) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            margin-bottom: 110px; /* مساحة للإعلان */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
+        }
+
+        .main-title { text-align: center; font-size: 24px; font-weight: 900; color: var(--accent-gold); margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: var(--text-dim); padding-right: 5px; }
+        
+        .input-group input { 
+            width: 100%; padding: 14px; border-radius: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.5);
+            font-size: 15px; font-weight: bold; color: white;
+            outline: none; box-sizing: border-box; text-align: center;
+            transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--accent-gold); box-shadow: 0 0 10px rgba(255, 177, 0, 0.1); }
+
+        button#submitBtn { 
+            width: 100%; background: linear-gradient(135deg, var(--accent-gold), #cc8e00); 
+            color: #0f172a; border: none; padding: 18px; 
+            border-radius: 20px; font-size: 18px; font-weight: 800; 
+            cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        button#submitBtn:active { transform: scale(0.97); }
+        button#submitBtn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+
+        #msg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; }
+
+        /* --- تنسيقات الإعلان المدمجة --- */
+        #smart-ad-box { position: fixed; bottom: 0; left: 0; width: 100%; min-height: 85px; z-index: 99999; display: none; background: #0f172a; border-top: 2px solid var(--accent-gold); box-shadow: 0 -5px 25px rgba(0,0,0,0.6); overflow: hidden; cursor: pointer; }
+        .dhikr-style { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); height: 85px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .dhikr-style h2 { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--accent-gold); }
+        .dhikr-style p { margin: 2px 0 0 0; font-size: 0.9rem; color: #fff; }
+        #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
+        #copy-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: none; z-index: 100000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="container">
+    <div class="main-title">إرسال بلاغ جديد</div>
+    <form id="stolenForm">
+        <div class="input-group"><label>الشركة المصنعة</label><input type="text" name="brand" placeholder="مثلاً: Samsung" required></div>
+        <div class="input-group"><label>موديل الهاتف</label><input type="text" name="model" placeholder="مثلاً: S24 Ultra" required></div>
+        <div class="input-group"><label>اللون</label><input type="text" name="color" placeholder="مثلاً: أسود" required></div>
+        <div class="input-group"><label>رقم IMEI</label><input type="text" name="imei" placeholder="أدخل 15 رقم" required></div>
+        <div class="input-group"><label>السيريال (S/N)</label><input type="text" name="serial" placeholder="أدخل الرقم التسلسلي"></div>
+        <div class="input-group"><label>رقم هاتف المالك</label><input type="tel" name="phone" placeholder="للتواصل معك" required></div>
+        <button type="submit" id="submitBtn">إرسال البلاغ الآن</button>
+    </form>
+    <div id="msg"></div>
+</div>
+
+<div id="smart-ad-box"><div id="smart-ad-content"></div></div>
+<div id="copy-toast">تم نسخ رقم التواصل بنجاح!</div>
+
+<script>
+    // كود الإرسال الأصلي
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyS8x7lZ40mEzbgP3tOw56ZxHnCd2XUk2dC7vdbma4J8zVDlkUkrSgivf3HApBowocjSg/exec';
+    document.getElementById('stolenForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const msgDiv = document.getElementById('msg');
+        btn.disabled = true; btn.innerText = "جاري الإرسال...";
+        
+        fetch(scriptURL, { method: 'POST', body: new FormData(e.target)})
+        .then(() => {
+            msgDiv.style.color = "var(--success)";
+            msgDiv.innerHTML = "✅ تم تسجيل البلاغ بنجاح!";
+            e.target.reset(); 
+            btn.disabled = false; btn.innerText = "إرسال بلاغ جديد";
+        })
+        .catch(error => {
+            msgDiv.style.color = "#e74c3c";
+            msgDiv.innerHTML = "❌ حدث خطأ، حاول مرة أخرى";
+            btn.disabled = false; btn.innerText = "إرسال البلاغ الآن";
+        });
+    });
+
+    // كود الإعلان المطور (نسخ الرقم)
+    (function() {
+        const AD_JSON_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+        const adBox = document.getElementById('smart-ad-box');
+        const adContent = document.getElementById('smart-ad-content');
+        const toast = document.getElementById('copy-toast');
+        let contactToCopy = "";
+
+        function showDhikr() {
+            adBox.style.display = "block";
+            adContent.innerHTML = `<div class="dhikr-style"><h2>لا إله إلا الله محمد رسول الله</h2><p>اللهم صلِّ على سيدنا محمد</p></div>`;
+            adBox.onclick = null;
+        }
+
+        function copyAction(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }
+
+        async function fetchSmartAd() {
+            try {
+                const res = await fetch(AD_JSON_URL + "?t=" + new Date().getTime());
+                const data = await res.json();
+                if (data.active) {
+                    contactToCopy = data.link_url;
+                    adBox.style.display = "block";
+                    adContent.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ad">`;
+                    adBox.onclick = function() { if(contactToCopy) copyAction(contactToCopy); };
+                } else { showDhikr(); }
+            } catch (e) { showDhikr(); }
+        }
+
+        window.addEventListener('load', fetchSmartAd);
+        window.addEventListener('offline', showDhikr);
+        window.addEventListener('online', fetchSmartAd);
+    })();
+</script>
+
+</body>
+</html>
