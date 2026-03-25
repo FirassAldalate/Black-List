@@ -291,55 +291,116 @@
 </style>
 
 <div id="ad-container-fixed"></div>
-<div id="copy-notice">تم نسخ رقم التواصل بنجاح!</div>
+<style>
+    #smart-ad-box {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        min-height: 85px; 
+        z-index: 99999;
+        display: none; 
+        background: #0f172a;
+        border-top: 2px solid #ffb100;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+        line-height: 1.4;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .dhikr-style {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        height: 85px;
+        display: flex;
+        flex-direction: column; 
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    @keyframes pulseGlowGold {
+        0% { color: #ffb100; text-shadow: 0 0 5px rgba(255, 177, 0, 0.4); }
+        50% { color: #ffd061; text-shadow: 0 0 15px rgba(255, 177, 0, 0.8); }
+        100% { color: #ffb100; text-shadow: 0 0 5px rgba(255, 177, 0, 0.4); }
+    }
+
+    .dhikr-style h2 { margin: 0; font-size: 1.2rem; font-weight: 800; animation: pulseGlowGold 3s ease-in-out infinite; }
+    .dhikr-style p { margin: 2px 0 0 0; font-size: 1rem; font-weight: 600; color: #fff; }
+
+    #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
+
+    /* تنبيه النسخ */
+    #copy-toast-msg {
+        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+        background: #25d366; color: white; padding: 10px 25px;
+        border-radius: 50px; font-weight: bold; display: none; z-index: 100000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+</style>
+
+<div id="smart-ad-box">
+    <div id="smart-ad-content"></div>
+</div>
+<div id="copy-toast-msg">تم نسخ رقم التواصل بنجاح!</div>
 
 <script>
-(function() {
-    const URL_JSON = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
-    const container = document.getElementById('ad-container-fixed');
-    const notice = document.getElementById('copy-notice');
+    (function() {
+        const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+        const box = document.getElementById('smart-ad-box');
+        const content = document.getElementById('smart-ad-content');
+        const toast = document.getElementById('copy-toast-msg');
+        let contactData = ""; 
 
-    function showFallback() {
-        container.style.display = "block";
-        document.body.style.paddingBottom = "100px";
-        container.innerHTML = `<div class="dhikr-view"><b style="font-size:1.1rem">لا إله إلا الله محمد رسول الله</b><br><span style="color:#eee">اللهم صلِّ على سيدنا محمد</span></div>`;
-        container.onclick = null; 
-    }
-
-    function copyToClipboard(text) {
-        const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        notice.style.display = "block";
-        setTimeout(() => { notice.style.display = "none"; }, 2500);
-    }
-
-    async function loadSmartAd() {
-        try {
-            const response = await fetch(URL_JSON + "?t=" + new Date().getTime());
-            const data = await response.json();
-
-            if (data && data.active === true) {
-                container.style.display = "block";
-                document.body.style.paddingBottom = "100px";
-                container.innerHTML = `<img id="ad-img-view" src="${data.image_url}" alt="Ad">`;
-                
-                container.onclick = function() {
-                    if (data.link_url) copyToClipboard(data.link_url);
-                };
-            } else {
-                showFallback();
-            }
-        } catch (e) {
-            showFallback();
+        function showDhikrUI() {
+            box.style.display = "block";
+            document.body.style.paddingBottom = "100px";
+            content.innerHTML = `
+                <div class="dhikr-style">
+                    <h2>لا إله إلا الله محمد رسول الله</h2>
+                    <p>اللهم صلِّ على سيدنا محمد</p>
+                </div>`;
+            box.onclick = null; 
         }
-    }
 
-    loadSmartAd();
-})();
+        function copyNow(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }
+
+        async function fetchAd() {
+            try {
+                // منع التخزين المؤقت لضمان التحديث اللحظي
+                const response = await fetch(GITHUB_URL + "?t=" + new Date().getTime(), { cache: "no-store" });
+                const data = await response.json();
+
+                if (data.active) {
+                    contactData = data.link_url; // الرقم موجود هنا
+                    box.style.display = "block";
+                    document.body.style.paddingBottom = "100px";
+                    content.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ads">`;
+                    
+                    // تفعيل وظيفة النسخ عند الضغط
+                    box.onclick = function() {
+                        if (contactData) copyNow(contactData);
+                    };
+                } else {
+                    showDhikrUI();
+                }
+            } catch (err) {
+                showDhikrUI();
+            }
+        }
+
+        window.addEventListener('load', fetchAd);
+        window.addEventListener('offline', showDhikrUI);
+        window.addEventListener('online', fetchAd);
+    })();
 </script>
 
 </body>
