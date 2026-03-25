@@ -123,19 +123,19 @@
         } else { resDiv.innerHTML = `<div class="error-msg">⚠️ لم يتم العثور على نتائج</div>`; }
     }
 </script>
-    <style>
+     <style>
     #smart-ad-box {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        min-height: 80px; /* زيادة الارتفاع قليلاً لتناسب السطرين */
+        min-height: 80px; 
         z-index: 10000;
         display: none; 
         background: #0f172a;
         border-top: 2px solid #ffb100;
         box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
-        line-height: 1.4; /* لترك مسافة بين السطرين */
+        line-height: 1.4;
         overflow: hidden;
     }
 
@@ -143,13 +143,12 @@
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         height: 85px;
         display: flex;
-        flex-direction: column; /* ترتيب العبارات فوق بعضها */
+        flex-direction: column; 
         justify-content: center;
         align-items: center;
         text-align: center;
     }
 
-    /* حركة التوهج الذهبي */
     @keyframes pulseGlowGold {
         0% { color: #ffb100; text-shadow: 0 0 5px rgba(255, 177, 0, 0.4); }
         50% { color: #ffd061; text-shadow: 0 0 15px rgba(255, 177, 0, 0.8); }
@@ -158,7 +157,7 @@
 
     .dhikr-style h2 {
         margin: 0;
-        font-size: 1.2rem; /* تصغير الخط قليلاً لتناسب الجوال */
+        font-size: 1.2rem;
         font-weight: 800;
         animation: pulseGlowGold 3s ease-in-out infinite;
     }
@@ -167,14 +166,14 @@
         margin: 2px 0 0 0;
         font-size: 1rem;
         font-weight: 600;
-        animation: pulseGlowGold 3.5s ease-in-out infinite; /* سرعة مختلفة قليلاً لتعطي حركة أجمل */
+        animation: pulseGlowGold 3.5s ease-in-out infinite;
     }
 
     #smart-ad-img {
         width: 100%;
-        height: auto;
-        max-height: 85px;
-        object-fit: cover;
+        height: 85px;
+        object-fit: fill; /* لضمان ملء المساحة المخصصة للإعلان */
+        display: block;
     }
 </style>
 
@@ -184,6 +183,7 @@
 
 <script>
     (function() {
+        // تم استخدام الرابط الجديد ad.json كما في طلبك
         const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
         const box = document.getElementById('smart-ad-box');
         const content = document.getElementById('smart-ad-content');
@@ -216,8 +216,10 @@
                 if (data.active) {
                     box.style.display = "block";
                     document.body.style.paddingBottom = "95px";
+                    
+                    // التعديل الجوهري هنا لفتح الرابط في متصفح خارجي
                     content.innerHTML = `
-                        <a href="${data.link_url}" target="_blank">
+                        <a href="${data.link_url}" target="_blank" rel="noopener noreferrer">
                             <img id="smart-ad-img" src="${data.image_url}" alt="Ads">
                         </a>`;
                 } else {
@@ -233,6 +235,7 @@
         window.addEventListener('online', fetchAd);
     })();
 </script>
+
 
 </body>
 </html>
