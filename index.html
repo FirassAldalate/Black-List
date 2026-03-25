@@ -220,21 +220,90 @@
                     // التعديل الجوهري هنا لفتح الرابط في متصفح خارجي
                     content.innerHTML = `
                         <a href="${data.link_url}" target="_blank" rel="noopener noreferrer">
-                            <img id="smart-ad-img" src="${data.image_url}" alt="Ads">
-                        </a>`;
+<style>
+    /* التنسيقات السابقة كما هي */
+    #smart-ad-box {
+        position: fixed; bottom: 0; left: 0; width: 100%; min-height: 80px; 
+        z-index: 10000; display: none; background: #0f172a;
+        border-top: 2px solid #ffb100; box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+        overflow: hidden; cursor: pointer; /* لإظهار أنه قابل للضغط */
+    }
+
+    #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
+
+    /* تنسيق رسالة التنبيه عند النسخ */
+    #copy-toast {
+        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+        background: #25d366; color: white; padding: 10px 20px;
+        border-radius: 50px; font-weight: bold; display: none; z-index: 10001;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+</style>
+
+<div id="smart-ad-box" onclick="handleAdClick()">
+    <div id="smart-ad-content"></div>
+</div>
+<div id="copy-toast">تم نسخ رقم التواصل بنجاح!</div>
+
+<script>
+    (function() {
+        const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+        const box = document.getElementById('smart-ad-box');
+        const content = document.getElementById('smart-ad-content');
+        const toast = document.getElementById('copy-toast');
+        let contactNumber = ""; // سيتم جلبه من ملف JSON
+
+        window.handleAdClick = function() {
+            if (!contactNumber) return;
+
+            // محاولة النسخ
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(contactNumber).then(showToast);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = contactNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast();
+                } catch (err) {
+                    console.error('فشل النسخ');
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+
+        function showToast() {
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }
+
+        async function fetchAd() {
+            try {
+                const response = await fetch(GITHUB_URL, { cache: "no-store" });
+                const data = await response.json();
+                
+                if (data.active) {
+                    contactNumber = data.link_url; // نستخدم خانة الرابط لوضع الرقم فيها
+                    box.style.display = "block";
+                    document.body.style.paddingBottom = "95px";
+                    content.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ads">`;
                 } else {
-                    showDhikrUI();
+                    // عرض الأذكار إذا كان الإعلان غير نشط
+                    box.style.display = "block";
+                    content.innerHTML = `<div class="dhikr-style"><h2>لا إله إلا الله محمد رسول الله</h2><p>اللهم صلِّ على سيدنا محمد</p></div>`;
+                    box.onclick = null; // تعطيل النسخ عند ظهور الأذكار
                 }
             } catch (err) {
-                showDhikrUI();
+                console.error("Ad error");
             }
         }
 
         window.addEventListener('load', fetchAd);
-        window.addEventListener('offline', showDhikrUI);
-        window.addEventListener('online', fetchAd);
     })();
 </script>
+
 
 
 </body>
