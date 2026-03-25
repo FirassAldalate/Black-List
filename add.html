@@ -43,5 +43,116 @@
         });
     });
 </script>
+    <style>
+    #smart-ad-box {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        min-height: 80px; /* زيادة الارتفاع قليلاً لتناسب السطرين */
+        z-index: 10000;
+        display: none; 
+        background: #0f172a;
+        border-top: 2px solid #ffb100;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
+        line-height: 1.4; /* لترك مسافة بين السطرين */
+        overflow: hidden;
+    }
+
+    .dhikr-style {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        height: 85px;
+        display: flex;
+        flex-direction: column; /* ترتيب العبارات فوق بعضها */
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* حركة التوهج الذهبي */
+    @keyframes pulseGlowGold {
+        0% { color: #ffb100; text-shadow: 0 0 5px rgba(255, 177, 0, 0.4); }
+        50% { color: #ffd061; text-shadow: 0 0 15px rgba(255, 177, 0, 0.8); }
+        100% { color: #ffb100; text-shadow: 0 0 5px rgba(255, 177, 0, 0.4); }
+    }
+
+    .dhikr-style h2 {
+        margin: 0;
+        font-size: 1.2rem; /* تصغير الخط قليلاً لتناسب الجوال */
+        font-weight: 800;
+        animation: pulseGlowGold 3s ease-in-out infinite;
+    }
+
+    .dhikr-style p {
+        margin: 2px 0 0 0;
+        font-size: 1rem;
+        font-weight: 600;
+        animation: pulseGlowGold 3.5s ease-in-out infinite; /* سرعة مختلفة قليلاً لتعطي حركة أجمل */
+    }
+
+    #smart-ad-img {
+        width: 100%;
+        height: auto;
+        max-height: 85px;
+        object-fit: cover;
+    }
+</style>
+
+<div id="smart-ad-box">
+    <div id="smart-ad-content"></div>
+</div>
+
+<script>
+    (function() {
+        const GITHUB_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+        const box = document.getElementById('smart-ad-box');
+        const content = document.getElementById('smart-ad-content');
+
+        function showDhikrUI() {
+            box.style.display = "block";
+            document.body.style.paddingBottom = "95px";
+            content.innerHTML = `
+                <div class="dhikr-style">
+                    <h2>لا إله إلا الله محمد رسول الله</h2>
+                    <p>اللهم صلِّ على سيدنا محمد</p>
+                </div>`;
+        }
+
+        async function fetchAd() {
+            if (!navigator.onLine) {
+                showDhikrUI();
+                return;
+            }
+            try {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), 4000);
+                const response = await fetch(GITHUB_URL, { 
+                    signal: controller.signal,
+                    cache: "no-store" 
+                });
+                const data = await response.json();
+                clearTimeout(id);
+
+                if (data.active) {
+                    box.style.display = "block";
+                    document.body.style.paddingBottom = "95px";
+                    content.innerHTML = `
+                        <a href="${data.link_url}" target="_blank">
+                            <img id="smart-ad-img" src="${data.image_url}" alt="Ads">
+                        </a>`;
+                } else {
+                    showDhikrUI();
+                }
+            } catch (err) {
+                showDhikrUI();
+            }
+        }
+
+        window.addEventListener('load', fetchAd);
+        window.addEventListener('offline', showDhikrUI);
+        window.addEventListener('online', fetchAd);
+    })();
+</script>
+
 </body>
 </html>
