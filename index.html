@@ -97,6 +97,114 @@
         #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
         #copy-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: none; z-index: 100000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
+    <style>
+    /* واجهة القفل الإجباري */
+    #force-update-overlay {
+        display: none; 
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%;
+        background: #0f172a; /* نفس خلفية البرنامج لتبدو كجزء منه */
+        z-index: 10000; /* أعلى من كل شيء */
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center;
+        text-align: center; 
+        padding: 25px; 
+        box-sizing: border-box;
+    }
+
+    .update-container {
+        max-width: 400px;
+        width: 90%;
+        background: #1e293b;
+        border: 2px solid #ffb100;
+        border-radius: 25px;
+        padding: 40px 20px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    .update-logo {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .update-container h2 {
+        color: #ffb100;
+        margin: 0 0 15px 0;
+        font-size: 1.5rem;
+    }
+
+    .update-container p {
+        color: #f8fafc;
+        line-height: 1.8;
+        font-size: 1.1rem;
+        margin-bottom: 0; /* لا يوجد أزرار بالأسفل */
+    }
+
+    /* تأثير نبض للتحذير */
+    .pulse-border {
+        animation: pulse-gold 2s infinite;
+    }
+    @keyframes pulse-gold {
+        0% { border-color: #ffb100; box-shadow: 0 0 0 0 rgba(255, 177, 0, 0.4); }
+        70% { border-color: #ffd700; box-shadow: 0 0 0 20px rgba(255, 177, 0, 0); }
+        100% { border-color: #ffb100; box-shadow: 0 0 0 0 rgba(255, 177, 0, 0); }
+    }
+</style>
+
+<div id="force-update-overlay">
+    <div class="update-container pulse-border">
+        <span class="update-logo">⚠️</span>
+        <h2>يتوفر تحديث جديد!</h2>
+        <p>
+            يرجى التحديث الآن لضمان استمرار عمل البرنامج بشكل صحيح.
+            <br><br>
+            يمكنك الحصول على النسخة الجديدة عبر <b>قناة التيلغرام</b> أو <b>قناة الواتساب</b> الرسمية في القائمة.
+        </p>
+    </div>
+</div>
+
+<script>
+    // إعدادات الإصدار الخاص بك
+    const MY_APP_VERSION = 1; 
+    const CONFIG_PATH = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/config.json";
+
+    async function verifyUpdate() {
+        // إذا لم يوجد إنترنت، اترك المستخدم يكمل عمله (فحص صامت)
+        if (!navigator.onLine) return;
+
+        try {
+            // جلب ملف الإعدادات من جيت هوب
+            const checkResponse = await fetch(CONFIG_PATH + "?nocache=" + new Date().getTime());
+            if (!checkResponse.ok) return;
+
+            const updateInfo = await checkResponse.json();
+
+            // المقارنة (إذا كانت نسخة السيرفر أكبر من نسخة البرنامج الحالية)
+            if (updateInfo.latest_version > MY_APP_VERSION) {
+                lockProgram();
+            }
+        } catch (err) {
+            console.error("خطأ في فحص التحديثات، سيتم تجاهل الفحص حالياً.");
+        }
+    }
+
+    function lockProgram() {
+        // إظهار واجهة القفل ومنع أي تفاعل مع الخلفية
+        const overlay = document.getElementById('force-update-overlay');
+        overlay.style.display = 'flex';
+        
+        // منع التمرير في الصفحة تماماً
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+    }
+
+    // بدء الفحص فور التشغيل
+    verifyUpdate();
+</script>
+
 </head>
 <body>
 
