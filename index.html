@@ -97,6 +97,207 @@
         #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
         #copy-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: none; z-index: 100000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="container">
+    <div class="main-title">القائمة السوداء</div>
+    <div class="sub-title">BLACK LIST DATABASE</div>
+    
+    <div id="status-container">
+        <span id="status-text">🔄 جاري فحص السيرفر...</span>
+        <div id="loader" class="progress-bar"><div class="progress-line"></div></div>
+    </div>
+
+    <div class="search-area">
+        <select id="searchType">
+            <option value="imei">البحث عن طريق IMEI</option>
+            <option value="serial">البحث عن طريق السيريال</option>
+            <option value="name">البحث عن طريق الشركة / الموديل</option>
+        </select>
+        <input type="text" id="q" placeholder="أدخل البيانات المطلوبة...">
+        <button onclick="doSearch()">البحث في القائمة</button>
+    </div>
+    <div id="results"></div>
+</div>
+
+<div id="smart-ad-box">
+    <div id="smart-ad-content"></div>
+</div>
+<div id="copy-toast">تم نسخ رقم التواصل بنجاح!</div>
+
+<script>
+    // كود جلب البيانات
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSF5W0EW-E_36UGUSpTWJkXx7gaLqjUbyz90syivKGp9D4GFWIm_yQmQxaNo_2lUmN1pM0BjH4bQPnI/pub?gid=0&single=true&output=csv';
+    let database = [];
+
+    async function loadData() {
+        try {
+            const response = await fetch(sheetUrl + "&t=" + new Date().getTime());
+            const data = await response.text();
+            database = data.split('\n').filter(row => row.trim() !== '').map(row => 
+                row.split(',').map(cell => cell.replace(/^"(.*)"$/, '$1').trim())
+            );
+            document.getElementById('loader').style.display = "none";
+            document.getElementById('status-text').innerHTML = "🟢 النظام متصل وجاهز";
+            document.getElementById('status-text').style.color = "#27ae60";
+        } catch (e) { 
+            document.getElementById('status-text').innerHTML = "🔴 خطأ في جلب البيانات"; 
+        }
+    }
+    loadData();
+
+    function doSearch() {
+        const query = document.getElementById('q').value.trim().toLowerCase();
+        const searchType = document.getElementById('searchType').value;
+        const resDiv = document.getElementById('results');
+        if (database.length === 0 || !query) return;
+        resDiv.innerHTML = "";
+        const labels = ["الشركة", "الموديل", "اللون", "IMEI", "السيريال", "رقم المالك"];
+        let found = [];
+        for (let i = 1; i < database.length; i++) {
+            const row = database[i];
+            let isMatch = false;
+            if (searchType === 'imei' && row[4] && row[4].toLowerCase() === query) isMatch = true;
+            else if (searchType === 'serial' && row[5] && row[5].toLowerCase() === query) isMatch = true;
+            else if (searchType === 'name') {
+                const info = ((row[1] || "") + " " + (row[2] || "")).toLowerCase();
+                if (info.includes(query)) isMatch = true;
+            }
+            if (isMatch) found.push(row);
+        }
+        if (found.length > 0) {
+            found.forEach(row => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                let html = "";
+                for(let j=1; j<=6; j++) {
+                    let val = row[j] || "---";
+                    if (searchType === 'name' && (j === 4 || j === 5)) {
+                        if (val !== "---" && val.length > 3) val = val.substring(0, val.length - 3) + "***";
+                    }
+                    if (searchType === 'name' && j === 6) val = "⚠️ مخفي";
+                    html += `<div class="info-row"><span class="label">${labels[j-1]}</span><span class="value">${val}</span></div>`;
+                }
+                if (row[6] && searchType !== 'name') {
+                    html += `<div style="margin-top:15px;"><a href="tel:${row[6]}" style="display:block; background:transparent; color:var(--accent-gold); text-decoration:none; padding:12px; border:1px solid var(--accent-gold); border-radius:15px; text-align:center; font-weight:bold;">📞 اتصال بالمالك</a></div>`;
+                }
+                card.innerHTML = html;
+                resDiv.appendChild(card);
+            });
+        } else { resDiv.innerHTML = `<div class="error-msg">⚠️ لم يتم العثور على نتائج</div>`; }
+    }
+
+    // كود الإعلان والنسخ
+    (function() {
+        const AD_JSON_URL = "https://raw.githubusercontent.com/FirassAldalate/Black-List/refs/heads/main/ad.json";
+        const adBox = document.getElementById('smart-ad-box');
+        const adContent = document.getElementById('smart-ad-content');
+        const toast = document.getElementById('copy-toast');
+        let contactToCopy = "";
+
+        function showDhikr() {
+            adBox.style.display = "block";
+            adContent.innerHTML = `<div class="dhikr-style"><h2>لا إله إلا الله محمد رسول الله</h2><p>اللهم صلِّ على سيدنا محمد</p></div>`;
+            adBox.onclick = null;
+        }
+
+        function copyAction(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }
+
+        async function fetchSmartAd() {
+            try {
+                const res = await fetch(AD_JSON_URL + "?t=" + new Date().getTime());
+                const data = await res.json();
+                if (data.active) {
+                    contactToCopy = data.link_url;
+                    adBox.style.display = "block";
+                    adContent.innerHTML = `<img id="smart-ad-img" src="${data.image_url}" alt="Ad">`;
+                    adBox.onclick = function() { if(contactToCopy) copyAction(contactToCopy); };
+                } else { showDhikr(); }
+            } catch (e) { showDhikr(); }
+        }
+
+        window.addEventListener('load', fetchSmartAd);
+        window.addEventListener('offline', showDhikr);
+        window.addEventListener('online', fetchSmartAd);
+    })();
+</script>
+
+</body>
+</html>            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            margin-bottom: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .main-title { text-align: center; font-size: 24px; font-weight: 900; color: var(--accent-gold); margin-bottom: 5px; }
+        .sub-title { text-align: center; font-size: 10px; color: var(--text-dim); margin-bottom: 20px; font-weight: bold; letter-spacing: 2px; }
+        
+        /* شريط التحميل الذهبي */
+        #status-container { margin-bottom: 20px; text-align: center; }
+        #status-text { font-size: 11px; font-weight: bold; color: var(--text-dim); display: block; margin-bottom: 8px; }
+        .progress-bar { width: 100%; height: 5px; background-color: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-line { 
+            width: 40%; height: 100%; 
+            background: var(--accent-gold); 
+            position: absolute; left: -40%; 
+            animation: loading 1.5s infinite linear; 
+        }
+        @keyframes loading { 0% { left: -40%; } 100% { left: 100%; } }
+
+        /* مدخلات البحث */
+        .search-area select, .search-area input { 
+            width: 100%; padding: 14px; border-radius: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.5);
+            margin-bottom: 12px; font-size: 15px; font-weight: bold; color: white;
+            outline: none; box-sizing: border-box; text-align: center; 
+        }
+
+        /* زر البحث الذهبي */
+        .search-area button { 
+            width: 100%; background: linear-gradient(135deg, var(--accent-gold), #cc8e00); 
+            color: #0f172a; border: none; padding: 16px; 
+            border-radius: 18px; font-size: 18px; font-weight: 800; 
+            cursor: pointer; transition: 0.3s;
+        }
+        .search-area button:active { transform: scale(0.97); }
+
+        /* بطاقات النتائج */
+        .result-card { 
+            background: rgba(15, 23, 42, 0.6); border-radius: 20px; padding: 18px; 
+            margin-top: 20px; border-right: 5px solid var(--accent-gold); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); animation: slideUp 0.4s ease; 
+        }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-direction: row-reverse; }
+        .label { font-weight: bold; color: var(--accent-gold); font-size: 12px; min-width: 90px; text-align: left; }
+        .value { color: var(--text-main); font-weight: 500; direction: ltr; text-align: right; font-size: 14px; }
+        .error-msg { color: #e74c3c; padding: 20px; text-align: center; font-weight: bold; font-size: 14px; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; } }
+
+        /* --- شريط الإعلان المدمج --- */
+        #smart-ad-box { position: fixed; bottom: 0; left: 0; width: 100%; min-height: 85px; z-index: 99999; display: none; background: #0f172a; border-top: 2px solid var(--accent-gold); box-shadow: 0 -5px 25px rgba(0,0,0,0.6); overflow: hidden; cursor: pointer; }
+        .dhikr-style { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); height: 85px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .dhikr-style h2 { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--accent-gold); }
+        .dhikr-style p { margin: 2px 0 0 0; font-size: 0.9rem; color: #fff; }
+        #smart-ad-img { width: 100%; height: 85px; object-fit: fill; display: block; }
+        #copy-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; display: none; z-index: 100000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    </style>
     <style>
     /* واجهة القفل الإجباري */
     #force-update-overlay {
