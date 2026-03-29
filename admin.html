@@ -98,6 +98,33 @@
 
         #msg { text-align: center; color: var(--text-dim); padding: 30px; font-size: 14px; }
     </style>
+  <script>
+    // قفل الصفحة إذا فتحت من متصفح كمبيوتر أو متصفح عادي
+    (function() {
+        var isAndroid = /Android/i.test(navigator.userAgent);
+        var isAppYet = /AppYet/i.test(navigator.userAgent); // فحص إذا كان المحرك AppYet
+
+        if (!isAndroid) {
+            // إذا فتحها شخص من الكمبيوتر، امسح محتوى الصفحة واكتب رسالة
+            document.documentElement.innerHTML = "<body style='background:#0f172a; color:white; text-align:center; padding-top:50px;'><h2>⚠️ غير مسموح بالدخول من المتصفح</h2><p>هذا الملف مخصص لتطبيق black list فقط.</p></body>";
+            window.stop(); // إيقاف تحميل بقية الكود
+        }
+    })();
+</script>
+  <script>
+// منع الزر الأيمن للفأرة
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// منع اختصارات لوحة التحكم (F12, Ctrl+Shift+I)
+document.onkeydown = function(e) {
+    if(event.keyCode == 123) return false; // F12
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+    if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U (عرض المصدر)
+}
+</script>
+
 </head>
 <body>
 
