@@ -317,7 +317,7 @@
 </div>
 
 <script>
-    const VERSION_CURRENT = 1; // رقم إصدار برنامجك الحالي
+    const VERSION_CURRENT = 2; // رقم إصدار برنامجك الحالي
     const UPD_URL = "https://firassaldalate.github.io/Black-List/config.json";
     const AD_URL = "https://firassaldalate.github.io/Black-List/fullscreenad.json";
 
@@ -1248,5 +1248,15 @@ function render() {
 }
 
 setupBrands();
-</script></body>
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker registered', reg))
+        .catch((err) => console.log('Service Worker failed', err));
+    });
+  }
+</script>
+</body>
 </html>
